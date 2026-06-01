@@ -481,6 +481,195 @@ button:disabled {
   margin-top: 8px;
 }
 
+.student-portfolio-layout,
+.student-feedback-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
+}
+
+.student-portfolio-main,
+.student-feedback-main {
+  display: grid;
+  gap: 14px;
+}
+
+.portfolio-highlight-card {
+  background: var(--soft);
+  border: 1px solid #bdd8d0;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.portfolio-highlight-card h3 {
+  font-size: 1.22rem;
+}
+
+.portfolio-highlight-card p {
+  color: #263633;
+}
+
+.portfolio-timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.portfolio-timeline-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 15px;
+}
+
+.portfolio-timeline-marker {
+  align-items: center;
+  background: var(--soft);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.portfolio-card-heading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.portfolio-card-heading small {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 5px;
+}
+
+.portfolio-timeline-card p {
+  margin-bottom: 10px;
+}
+
+.student-growth-panel {
+  position: sticky;
+  top: 18px;
+}
+
+.student-growth-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.student-growth-metrics article,
+.student-feedback-score-card,
+.student-growth-note,
+.student-parent-summary {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.student-growth-metrics article {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.student-growth-metrics strong {
+  color: var(--accent-strong);
+  font-size: 1.8rem;
+  grid-column: 1 / -1;
+}
+
+.student-growth-metrics span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.student-growth-note {
+  margin-top: 12px;
+}
+
+.student-feedback-hero-card {
+  align-items: start;
+  background: var(--soft);
+  border: 1px solid #bdd8d0;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 18px;
+}
+
+.student-feedback-hero-card p {
+  color: #263633;
+  font-size: 1.04rem;
+}
+
+.student-feedback-card-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.student-feedback-card-grid article {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.student-feedback-card-grid p,
+.student-parent-summary p {
+  color: #30343a;
+  white-space: pre-wrap;
+}
+
+.student-feedback-side {
+  display: grid;
+  gap: 14px;
+  position: sticky;
+  top: 18px;
+}
+
+.student-feedback-image {
+  align-items: center;
+  background: #fafaf8;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  display: grid;
+  min-height: 320px;
+  overflow: hidden;
+  place-items: center;
+  text-align: center;
+}
+
+.student-feedback-image img {
+  display: block;
+  max-height: 480px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.student-feedback-score-card strong {
+  color: var(--accent-strong);
+  font-size: 2.2rem;
+}
+
+.student-feedback-score-card span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
 .feedback-shortcuts {
   display: grid;
   gap: 8px;
@@ -1393,6 +1582,8 @@ pre {
   .submission-grid,
   .feedback-detail-grid,
   .portfolio-grid,
+  .student-portfolio-layout,
+  .student-feedback-layout,
   .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,
@@ -1414,6 +1605,7 @@ pre {
   .insight-grid,
   .analysis-summary-grid,
   .relation-list,
+  .student-feedback-card-grid,
   .review-rubric-grid,
   .rubric-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1428,6 +1620,11 @@ pre {
   }
 
   .student-task-panel {
+    position: static;
+  }
+
+  .student-growth-panel,
+  .student-feedback-side {
     position: static;
   }
 }
@@ -1473,6 +1670,7 @@ pre {
   .insight-grid,
   .analysis-summary-grid,
   .relation-list,
+  .student-feedback-card-grid,
   .review-status-flow,
   .review-rubric-grid,
   .rubric-strip,
