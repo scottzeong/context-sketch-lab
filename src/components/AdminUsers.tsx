@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   KeyRound,
   Link2,
+  Mail,
   PlusCircle,
   Save,
   Search,
@@ -20,9 +21,15 @@ import {
   ParentStudentLinkStatus,
   saveParentStudentLink,
   updateManagedProfile,
+  updateManagedProfileStatus,
   updateParentStudentLinkStatus
 } from "@/lib/profileRepository";
-import type { AgeRange, UserRole } from "@/lib/supabase/database.types";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import type {
+  AccountStatus,
+  AgeRange,
+  UserRole
+} from "@/lib/supabase/database.types";
 
 const roleLabels: Record<UserRole, string> = {
   admin: "관리자",
@@ -46,6 +53,11 @@ const linkStatusLabels: Record<ParentStudentLinkStatus, string> = {
   revoked: "해제"
 };
 
+const accountStatusLabels: Record<AccountStatus, string> = {
+  active: "활성",
+  disabled: "비활성"
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
     month: "short",
@@ -63,6 +75,7 @@ export function AdminUsers() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingLink, setIsSavingLink] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   async function loadAdminData() {
     const [nextProfiles, nextLinks] = await Promise.all([
@@ -104,6 +117,7 @@ export function AdminUsers() {
         profile.email,
         roleLabels[profile.role],
         profile.role,
+        accountStatusLabels[profile.accountStatus],
         profile.ageRange,
         profile.readingLevel
       ]
@@ -143,7 +157,8 @@ export function AdminUsers() {
         role: String(formData.get("role") || "student") as UserRole,
         displayName: String(formData.get("displayName") || ""),
         ageRange: String(formData.get("ageRange") || "") as AgeRange | "",
-        readingLevel: String(formData.get("readingLevel") || "")
+        readingLevel: String(formData.get("readingLevel") || ""),
+        accountStatus: String(formData.get("accountStatus") || "active") as AccountStatus
       });
 
       setProfiles((current) =>
@@ -153,6 +168,102 @@ export function AdminUsers() {
       setMessage("사용자 프로필을 저장했습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "저장에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function createUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsCreatingUser(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: String(formData.get("email") || ""),
+          password: String(formData.get("password") || ""),
+          displayName: String(formData.get("displayName") || ""),
+          role: String(formData.get("role") || "student"),
+          ageRange: String(formData.get("ageRange") || ""),
+          readingLevel: String(formData.get("readingLevel") || "")
+        })
+      });
+      const result = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "계정 생성에 실패했습니다.");
+      }
+
+      await loadAdminData();
+      event.currentTarget.reset();
+      setMessage(
+        "새 계정을 생성했습니다. 사용자에게 이메일과 임시 비밀번호를 전달하고 첫 로그인 후 프로필 설정을 안내하세요."
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "계정 생성에 실패했습니다.");
+    } finally {
+      setIsCreatingUser(false);
+    }
+  }
+
+  async function sendPasswordReset() {
+    if (!selectedProfile?.email) {
+      setMessage("비밀번호 재설정 이메일을 보낼 사용자를 선택해 주세요.");
+      return;
+    }
+
+    setIsSendingReset(true);
+    setMessage(null);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const redirectTo = `${window.location.origin}/onboarding`;
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        selectedProfile.email,
+        { redirectTo }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      setMessage(`${selectedProfile.email}로 비밀번호 재설정 이메일을 보냈습니다.`);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "비밀번호 재설정 이메일 발송에 실패했습니다."
+      );
+    } finally {
+      setIsSendingReset(false);
+    }
+  }
+
+  async function changeAccountStatus(accountStatus: AccountStatus) {
+    if (!selectedProfile) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage(null);
+
+    try {
+      const saved = await updateManagedProfileStatus(selectedProfile.id, accountStatus);
+      setProfiles((current) =>
+        current.map((profile) => (profile.id === saved.id ? saved : profile))
+      );
+      setMessage(`계정을 ${accountStatusLabels[accountStatus]} 상태로 변경했습니다.`);
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "계정 상태 변경에 실패했습니다."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -217,44 +328,6 @@ export function AdminUsers() {
     }
   }
 
-  async function createUser(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsCreatingUser(true);
-    setMessage(null);
-
-    try {
-      const formData = new FormData(event.currentTarget);
-      const response = await fetch("/api/admin/create-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: String(formData.get("email") || ""),
-          password: String(formData.get("password") || ""),
-          displayName: String(formData.get("displayName") || ""),
-          role: String(formData.get("role") || "student"),
-          ageRange: String(formData.get("ageRange") || ""),
-          readingLevel: String(formData.get("readingLevel") || "")
-        })
-      });
-      const result = (await response.json()) as {
-        ok: boolean;
-        error?: string;
-      };
-
-      if (!response.ok || !result.ok) {
-        throw new Error(result.error || "계정 생성에 실패했습니다.");
-      }
-
-      await loadAdminData();
-      event.currentTarget.reset();
-      setMessage("새 계정을 생성했습니다. 사용자에게 이메일과 임시 비밀번호를 전달하세요.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "계정 생성에 실패했습니다.");
-    } finally {
-      setIsCreatingUser(false);
-    }
-  }
-
   const roleCounts = profiles.reduce(
     (counts, profile) => ({
       ...counts,
@@ -281,7 +354,7 @@ export function AdminUsers() {
           <input
             id="admin-user-search"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="이름, 이메일, 역할 검색"
+            placeholder="이름, 이메일, 역할, 상태 검색"
             value={query}
           />
         </label>
@@ -308,7 +381,8 @@ export function AdminUsers() {
                 <span>
                   <strong>{profile.displayName}</strong>
                   <small>
-                    {profile.email} · {roleLabels[profile.role]}
+                    {profile.email} · {roleLabels[profile.role]} ·{" "}
+                    {accountStatusLabels[profile.accountStatus]}
                   </small>
                 </span>
                 <UserRoundCog aria-hidden="true" size={18} />
@@ -389,6 +463,15 @@ export function AdminUsers() {
               {isCreatingUser ? "생성 중" : "계정 생성"}
             </button>
           </form>
+
+          <div className="admin-profile-note">
+            <h3>계정 전달 안내</h3>
+            <p>
+              새 계정을 만든 뒤 이메일과 임시 비밀번호를 사용자에게 전달하세요. 사용자는
+              첫 로그인 후 프로필 설정 화면에서 이름, 학습 정보, 새 비밀번호를 정리할 수
+              있습니다.
+            </p>
+          </div>
         </section>
 
         <section className="panel admin-user-detail">
@@ -415,7 +498,7 @@ export function AdminUsers() {
                 </div>
                 <span className="user-role-pill">
                   <ShieldCheck aria-hidden="true" size={14} />
-                  {roleLabels[selectedProfile.role]}
+                  {accountStatusLabels[selectedProfile.accountStatus]}
                 </span>
               </div>
 
@@ -436,6 +519,22 @@ export function AdminUsers() {
                         {roleLabels[role]}
                       </option>
                     ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor="accountStatus">계정 상태</label>
+                  <select
+                    id="accountStatus"
+                    name="accountStatus"
+                    defaultValue={selectedProfile.accountStatus}
+                  >
+                    {(Object.keys(accountStatusLabels) as AccountStatus[]).map(
+                      (status) => (
+                        <option key={status} value={status}>
+                          {accountStatusLabels[status]}
+                        </option>
+                      )
+                    )}
                   </select>
                 </div>
                 <div className="field">
@@ -464,11 +563,40 @@ export function AdminUsers() {
                 </div>
               </div>
 
+              <div className="admin-account-actions">
+                <button
+                  className="secondary-button"
+                  disabled={isSendingReset}
+                  onClick={sendPasswordReset}
+                  type="button"
+                >
+                  <Mail aria-hidden="true" size={16} />
+                  {isSendingReset ? "발송 중" : "비밀번호 재설정 이메일"}
+                </button>
+                <button
+                  className="secondary-button"
+                  disabled={isSaving}
+                  onClick={() => changeAccountStatus("active")}
+                  type="button"
+                >
+                  계정 활성화
+                </button>
+                <button
+                  className="danger-button"
+                  disabled={isSaving}
+                  onClick={() => changeAccountStatus("disabled")}
+                  type="button"
+                >
+                  계정 비활성화
+                </button>
+              </div>
+
               <div className="admin-profile-note">
                 <h3>운영 메모</h3>
                 <p>
-                  이 화면은 현재 organization 안의 profile만 관리합니다. 이메일과
-                  로그인 비밀번호는 Supabase Authentication에서 관리합니다.
+                  비활성 계정은 로그인 후 서비스 화면에 접근할 수 없습니다. 완전 삭제는
+                  기록 보존 정책을 확정한 뒤 Supabase Authentication에서 별도로
+                  처리하는 것을 권장합니다.
                 </p>
               </div>
             </form>

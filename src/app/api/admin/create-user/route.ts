@@ -30,11 +30,16 @@ export async function POST(request: Request) {
 
     const { data: adminProfile, error: profileError } = await supabase
       .from("profiles")
-      .select("role, organization_id")
+      .select("role, organization_id, account_status")
       .eq("id", user.id)
       .single();
 
-    if (profileError || !adminProfile || adminProfile.role !== "admin") {
+    if (
+      profileError ||
+      !adminProfile ||
+      adminProfile.role !== "admin" ||
+      adminProfile.account_status === "disabled"
+    ) {
       return NextResponse.json(
         { ok: false, error: "관리자만 계정을 생성할 수 있습니다." },
         { status: 403 }
@@ -78,6 +83,7 @@ export async function POST(request: Request) {
       organization_id: adminProfile.organization_id,
       age_range: (payload.ageRange || null) as AgeRange | null,
       reading_level: payload.readingLevel || null,
+      account_status: "active",
       updated_at: new Date().toISOString()
     });
 

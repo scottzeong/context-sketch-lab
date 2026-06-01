@@ -1,4 +1,5 @@
 export type UserRole = "admin" | "tutor" | "student" | "parent";
+export type AccountStatus = "active" | "disabled";
 export type AgeRange =
   | "AGE_7_8"
   | "AGE_9_10"
@@ -20,6 +21,7 @@ export type Database = {
           birth_date: string | null;
           age_range: AgeRange | null;
           reading_level: string | null;
+          account_status: AccountStatus;
           created_at: string;
           updated_at: string;
         };
@@ -32,6 +34,7 @@ export type Database = {
           birth_date?: string | null;
           age_range?: AgeRange | null;
           reading_level?: string | null;
+          account_status?: AccountStatus;
           created_at?: string;
           updated_at?: string;
         };
@@ -43,6 +46,7 @@ export type Database = {
           birth_date?: string | null;
           age_range?: AgeRange | null;
           reading_level?: string | null;
+          account_status?: AccountStatus;
           updated_at?: string;
         };
         Relationships: [];

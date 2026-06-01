@@ -736,6 +736,19 @@ button:disabled {
   justify-content: center;
 }
 
+.admin-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.admin-account-actions button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
 .admin-profile-card {
   align-items: center;
   background: #fafaf8;
@@ -836,6 +849,21 @@ button:disabled {
 
 .onboarding-form {
   border-top: 1px solid var(--line);
+}
+
+.onboarding-password-form {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.onboarding-password-form button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  justify-self: start;
 }
 
 .reports-layout {

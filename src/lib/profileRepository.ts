@@ -1,6 +1,6 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { requireCurrentProfile } from "@/lib/supabase/currentUser";
-import type { AgeRange, UserRole } from "@/lib/supabase/database.types";
+import type { AccountStatus, AgeRange, UserRole } from "@/lib/supabase/database.types";
 
 export type ManagedProfileRecord = {
   id: string;
@@ -11,6 +11,7 @@ export type ManagedProfileRecord = {
   birthDate?: string;
   ageRange?: AgeRange;
   readingLevel?: string;
+  accountStatus: AccountStatus;
   createdAt: string;
   updatedAt: string;
 };
@@ -40,6 +41,7 @@ function mapProfile(row: {
   birth_date: string | null;
   age_range: AgeRange | null;
   reading_level: string | null;
+  account_status?: AccountStatus | null;
   created_at: string;
   updated_at: string;
 }): ManagedProfileRecord {
@@ -52,6 +54,7 @@ function mapProfile(row: {
     birthDate: row.birth_date || undefined,
     ageRange: row.age_range || undefined,
     readingLevel: row.reading_level || undefined,
+    accountStatus: row.account_status || "active",
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -85,6 +88,7 @@ export async function updateManagedProfile(
     displayName: string;
     ageRange?: AgeRange | "";
     readingLevel?: string;
+    accountStatus?: AccountStatus;
   }
 ) {
   const supabase = createSupabaseBrowserClient();
@@ -95,6 +99,29 @@ export async function updateManagedProfile(
       display_name: updates.displayName || null,
       age_range: updates.ageRange || null,
       reading_level: updates.readingLevel || null,
+      account_status: updates.accountStatus || undefined,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapProfile(data);
+}
+
+export async function updateManagedProfileStatus(
+  id: string,
+  accountStatus: AccountStatus
+) {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      account_status: accountStatus,
       updated_at: new Date().toISOString()
     })
     .eq("id", id)

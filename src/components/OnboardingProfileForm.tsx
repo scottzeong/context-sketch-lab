@@ -1,11 +1,12 @@
 "use client";
 
-import { CheckCircle2, Save } from "lucide-react";
+import { CheckCircle2, KeyRound, Save } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   getOnboardingProfile,
   OnboardingProfile,
-  updateOwnOnboardingProfile
+  updateOwnOnboardingProfile,
+  updateOwnPassword
 } from "@/lib/onboardingRepository";
 import type { AgeRange } from "@/lib/supabase/database.types";
 
@@ -35,7 +36,9 @@ const roleLabels: Record<string, string> = {
 export function OnboardingProfileForm() {
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -77,6 +80,36 @@ export function OnboardingProfileForm() {
       setMessage(error instanceof Error ? error.message : "프로필 저장에 실패했습니다.");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function savePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsUpdatingPassword(true);
+    setPasswordMessage(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const password = String(formData.get("password") || "");
+      const confirmPassword = String(formData.get("confirmPassword") || "");
+
+      if (password.length < 6) {
+        throw new Error("새 비밀번호는 6자 이상이어야 합니다.");
+      }
+
+      if (password !== confirmPassword) {
+        throw new Error("비밀번호 확인이 일치하지 않습니다.");
+      }
+
+      await updateOwnPassword(password);
+      event.currentTarget.reset();
+      setPasswordMessage("비밀번호를 변경했습니다.");
+    } catch (error) {
+      setPasswordMessage(
+        error instanceof Error ? error.message : "비밀번호 변경에 실패했습니다."
+      );
+    } finally {
+      setIsUpdatingPassword(false);
     }
   }
 
@@ -154,6 +187,41 @@ export function OnboardingProfileForm() {
             내 작업 공간으로 이동
           </a>
         </div>
+      </form>
+
+      <form className="onboarding-password-form" onSubmit={savePassword}>
+        <div>
+          <p className="section-kicker">Password</p>
+          <h3>비밀번호 변경</h3>
+          <p>임시 비밀번호로 로그인했다면 여기에서 새 비밀번호로 변경하세요.</p>
+        </div>
+        {passwordMessage ? <p className="save-message">{passwordMessage}</p> : null}
+        <div className="grid-two">
+          <div className="field">
+            <label htmlFor="password">새 비밀번호</label>
+            <input
+              autoComplete="new-password"
+              id="password"
+              name="password"
+              placeholder="6자 이상"
+              type="password"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="confirmPassword">새 비밀번호 확인</label>
+            <input
+              autoComplete="new-password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="다시 입력"
+              type="password"
+            />
+          </div>
+        </div>
+        <button disabled={isUpdatingPassword} type="submit">
+          <KeyRound aria-hidden="true" size={17} />
+          {isUpdatingPassword ? "변경 중" : "비밀번호 변경"}
+        </button>
       </form>
     </section>
   );

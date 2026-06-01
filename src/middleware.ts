@@ -78,11 +78,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, account_status")
     .eq("id", user.id)
     .single();
 
-  if (!profile || !roleAllowed(pathname, profile.role)) {
+  if (!profile || profile.account_status === "disabled" || !roleAllowed(pathname, profile.role)) {
     return NextResponse.redirect(new URL(profile ? roleHome[profile.role] : "/login", request.url));
   }
 

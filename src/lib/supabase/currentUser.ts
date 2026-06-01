@@ -25,6 +25,10 @@ export async function requireCurrentProfile() {
     throw new Error("사용자 profile이 없습니다. 관리자에게 profile 생성을 요청하세요.");
   }
 
+  if (profile.account_status === "disabled") {
+    throw new Error("비활성화된 계정입니다. 관리자에게 문의해 주세요.");
+  }
+
   if (!profile.organization_id) {
     throw new Error("profile에 organization_id가 없습니다.");
   }

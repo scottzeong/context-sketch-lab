@@ -38,8 +38,14 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, display_name, age_range, reading_level")
+        .select("role, display_name, age_range, reading_level, account_status")
         .single();
+
+      if (profile?.account_status === "disabled") {
+        await supabase.auth.signOut();
+        setMessage("비활성화된 계정입니다. 관리자에게 문의해 주세요.");
+        return;
+      }
 
       const roleHome = {
         admin: "/tutor/dashboard",
