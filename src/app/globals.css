@@ -164,6 +164,102 @@ button:disabled {
   margin-top: 8px;
 }
 
+.user-summary {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.sidebar .user-summary {
+  background: #293133;
+  border-color: #3d4648;
+  color: #f5f2ea;
+  margin-top: 12px;
+}
+
+.student-topbar .user-summary {
+  min-width: 260px;
+}
+
+.user-summary.compact {
+  gap: 8px;
+}
+
+.user-summary-main {
+  align-items: center;
+  display: grid;
+  gap: 9px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.user-summary-main strong,
+.user-summary-main small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-summary-main small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.sidebar .user-summary-main small {
+  color: #b7c2c0;
+}
+
+.user-avatar {
+  align-items: center;
+  background: var(--soft);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  display: inline-flex;
+  font-weight: 900;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.user-role-pill {
+  align-items: center;
+  background: #fff7e6;
+  border: 1px solid #ebce92;
+  border-radius: 999px;
+  color: var(--amber);
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  gap: 6px;
+  justify-content: center;
+  padding: 0.42rem 0.62rem;
+}
+
+.user-signout-button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--accent-strong);
+  min-height: 36px;
+  padding: 0.52rem 0.7rem;
+  width: 100%;
+}
+
+.sidebar .user-signout-button {
+  border-color: #526063;
+  color: #f5f2ea;
+}
+
+.user-signout-button:hover {
+  background: var(--soft);
+}
+
+.sidebar .user-signout-button:hover {
+  background: #30393b;
+}
+
 .shell-main {
   min-width: 0;
   padding: 28px 24px 42px;
@@ -185,6 +281,7 @@ button:disabled {
   background: #fff;
   border-bottom: 1px solid var(--line);
   display: flex;
+  gap: 14px;
   justify-content: space-between;
   padding: 14px 22px;
 }
@@ -1229,6 +1326,11 @@ pre {
 
   .student-topbar {
     display: grid;
+  }
+
+  .student-topbar .user-summary {
+    min-width: 0;
+    width: 100%;
   }
 
   .student-main {

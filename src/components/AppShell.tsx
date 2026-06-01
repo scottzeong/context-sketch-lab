@@ -5,7 +5,6 @@ import {
   FileText,
   LayoutDashboard,
   LibraryBig,
-  LogIn,
   GraduationCap,
   Settings,
   Sparkles,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { UserAccountSummary } from "@/components/UserAccountSummary";
 
 const navItems = [
   { href: "/tutor/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -33,7 +33,7 @@ type AppShellProps = {
   action?: ReactNode;
 };
 
-export function AppShell({
+export async function AppShell({
   children,
   title,
   eyebrow = "Context Sketch Lab",
@@ -68,10 +68,7 @@ export function AppShell({
           <FileText aria-hidden="true" size={18} />
           <span>v1 planning build</span>
         </div>
-        <Link className="nav-item login-nav-item" href="/login">
-          <LogIn aria-hidden="true" size={18} />
-          <span>Sign in</span>
-        </Link>
+        <UserAccountSummary compact />
       </aside>
 
       <div className="shell-main">

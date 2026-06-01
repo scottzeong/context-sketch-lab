@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { UserAccountSummary } from "@/components/UserAccountSummary";
 
 type StudentShellProps = {
   children: ReactNode;
@@ -16,7 +17,7 @@ type StudentShellProps = {
   action?: ReactNode;
 };
 
-export function StudentShell({
+export async function StudentShell({
   children,
   title,
   eyebrow = "Student Workspace",
@@ -51,6 +52,7 @@ export function StudentShell({
             Manual
           </Link>
         </nav>
+        <UserAccountSummary compact />
       </header>
 
       <main className="student-main">
