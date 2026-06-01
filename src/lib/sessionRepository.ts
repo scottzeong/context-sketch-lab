@@ -13,6 +13,7 @@ export type StoredSessionRecord = {
   title: string;
   textId: string;
   textTitle: string;
+  groupId?: string;
   learningGoal: string;
   worksheetTemplate: WorksheetTemplateType;
   groupName: string;
@@ -27,6 +28,7 @@ type SessionRow = {
   title: string;
   text_id: string | null;
   texts?: { title: string | null } | null;
+  learning_group_id: string | null;
   learning_goal: string | null;
   worksheet_template: string | null;
   group_name: string | null;
@@ -46,6 +48,7 @@ function mapSession(row: SessionRow): StoredSessionRecord {
     title: row.title,
     textId: row.text_id || "",
     textTitle: row.texts?.title || "Untitled text",
+    groupId: row.learning_group_id || undefined,
     learningGoal: row.learning_goal || "",
     worksheetTemplate: (row.worksheet_template || "basic") as WorksheetTemplateType,
     groupName: row.group_name || "",
@@ -81,6 +84,7 @@ export async function saveStoredSession(
 
   const basePayload = {
     title: record.title,
+    learning_group_id: record.groupId || null,
     text_id: record.textId || null,
     learning_goal: record.learningGoal || null,
     worksheet_template: record.worksheetTemplate,

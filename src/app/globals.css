@@ -848,6 +848,72 @@ button:disabled {
   font-weight: 800;
 }
 
+.groups-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(300px, 0.4fr) minmax(0, 1fr);
+}
+
+.groups-list {
+  position: sticky;
+  top: 18px;
+}
+
+.group-detail {
+  display: grid;
+  gap: 18px;
+  min-height: 620px;
+}
+
+.compact-heading {
+  margin-bottom: 10px;
+}
+
+.group-members-section {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.group-add-student {
+  align-items: center;
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 12px;
+  padding: 10px;
+}
+
+.group-add-student select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+}
+
+.group-member-list {
+  display: grid;
+  gap: 10px;
+}
+
+.group-member-list article {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 12px;
+}
+
+.group-member-list p {
+  margin-top: 4px;
+}
+
 .feedback-shortcuts {
   display: grid;
   gap: 8px;
@@ -1764,6 +1830,7 @@ pre {
   .student-feedback-layout,
   .admin-users-layout,
   .reports-layout,
+  .groups-layout,
   .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,
@@ -1806,6 +1873,10 @@ pre {
   }
 
   .reports-list {
+    position: static;
+  }
+
+  .groups-list {
     position: static;
   }
 

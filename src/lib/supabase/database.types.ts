@@ -47,6 +47,55 @@ export type Database = {
         };
         Relationships: [];
       };
+      learning_groups: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          description: string | null;
+          age_range: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          description?: string | null;
+          age_range?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          age_range?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      learning_group_members: {
+        Row: {
+          id: string;
+          learning_group_id: string;
+          profile_id: string;
+          member_role: "tutor" | "student";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          learning_group_id: string;
+          profile_id: string;
+          member_role: "tutor" | "student";
+          created_at?: string;
+        };
+        Update: {
+          member_role?: "tutor" | "student";
+        };
+        Relationships: [];
+      };
       texts: {
         Row: {
           id: string;
@@ -155,6 +204,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          learning_group_id?: string | null;
           group_name?: string | null;
           text_id?: string | null;
           text_analysis_id?: string | null;

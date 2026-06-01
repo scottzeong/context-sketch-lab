@@ -3,6 +3,7 @@
 import { ArrowRight, ClipboardCheck, LibraryBig } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { getLearningGroups, LearningGroupRecord } from "@/lib/groupRepository";
 import { getStoredTexts, StoredTextRecord } from "@/lib/textRepository";
 import {
   saveStoredSession,
@@ -27,30 +28,42 @@ function recommendTemplate(structureType?: string): WorksheetTemplateType {
 
 export function SessionBuilder() {
   const [texts, setTexts] = useState<StoredTextRecord[]>([]);
+  const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
   const [selectedTextId, setSelectedTextId] = useState("");
+  const [selectedGroupId, setSelectedGroupId] = useState("");
   const [worksheetTemplate, setWorksheetTemplate] =
     useState<WorksheetTemplateType>("basic");
   const [message, setMessage] = useState<string | null>(null);
   const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    async function loadTexts() {
+    async function loadData() {
       try {
-        const storedTexts = await getStoredTexts();
+        const [storedTexts, storedGroups] = await Promise.all([
+          getStoredTexts(),
+          getLearningGroups()
+        ]);
         setTexts(storedTexts);
+        setGroups(storedGroups);
         setSelectedTextId(storedTexts[0]?.id || "");
+        setSelectedGroupId(storedGroups[0]?.id || "");
         setWorksheetTemplate(recommendTemplate(storedTexts[0]?.structureType));
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Text load failed.");
+        setMessage(error instanceof Error ? error.message : "데이터를 불러오지 못했습니다.");
       }
     }
 
-    void loadTexts();
+    void loadData();
   }, []);
 
   const selectedText = useMemo(
     () => texts.find((item) => item.id === selectedTextId) || null,
     [selectedTextId, texts]
+  );
+  const selectedGroup = useMemo(
+    () => groups.find((group) => group.id === selectedGroupId) || null,
+    [groups, selectedGroupId]
   );
 
   function onTextChange(textId: string) {
@@ -68,20 +81,34 @@ export function SessionBuilder() {
       return;
     }
 
-    const formData = new FormData(event.currentTarget);
-    const session = await saveStoredSession({
-      title: String(formData.get("title") || selectedText.title),
-      textId: selectedText.id,
-      textTitle: selectedText.title,
-      learningGoal: String(formData.get("learningGoal") || selectedText.learningGoal || ""),
-      worksheetTemplate,
-      groupName: String(formData.get("groupName") || "AGE_9_10 독해 A"),
-      status: String(formData.get("status") || "draft") as "draft" | "published",
-      scheduledFor: String(formData.get("scheduledFor") || "")
-    });
+    setIsSaving(true);
+    setMessage(null);
 
-    setSavedSessionId(session.id);
-    setMessage("세션을 저장했습니다. Sessions 화면에서 상태를 관리할 수 있습니다.");
+    try {
+      const formData = new FormData(event.currentTarget);
+      const session = await saveStoredSession({
+        title: String(formData.get("title") || selectedText.title),
+        textId: selectedText.id,
+        textTitle: selectedText.title,
+        groupId: selectedGroup?.id,
+        learningGoal: String(
+          formData.get("learningGoal") || selectedText.learningGoal || ""
+        ),
+        worksheetTemplate,
+        groupName: selectedGroup?.name || "전체 학생",
+        status: String(formData.get("status") || "draft") as
+          | "draft"
+          | "published",
+        scheduledFor: String(formData.get("scheduledFor") || "")
+      });
+
+      setSavedSessionId(session.id);
+      setMessage("세션을 저장했습니다. Sessions 화면에서 상태를 관리할 수 있습니다.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "세션 저장에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (!texts.length) {
@@ -106,9 +133,9 @@ export function SessionBuilder() {
             <p className="section-kicker">Builder</p>
             <h2>세션 정보</h2>
           </div>
-          <button type="submit">
+          <button disabled={isSaving} type="submit">
             <ClipboardCheck aria-hidden="true" size={18} />
-            세션 저장
+            {isSaving ? "저장 중" : "세션 저장"}
           </button>
         </div>
 
@@ -138,21 +165,42 @@ export function SessionBuilder() {
             />
           </div>
           <div className="field">
-            <label htmlFor="groupName">배포 그룹</label>
-            <select id="groupName" name="groupName" defaultValue="AGE_9_10 독해 A">
-              <option value="AGE_9_10 독해 A">AGE_9_10 독해 A</option>
-              <option value="AGE_11_12 구조화 B">AGE_11_12 구조화 B</option>
-              <option value="AGE_13_15 리프레이밍">AGE_13_15 리프레이밍</option>
+            <label htmlFor="groupId">배포 그룹</label>
+            <select
+              id="groupId"
+              name="groupId"
+              onChange={(event) => setSelectedGroupId(event.target.value)}
+              value={selectedGroupId}
+            >
+              <option value="">전체 학생</option>
+              {groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name} ({group.studentCount}명)
+                </option>
+              ))}
             </select>
           </div>
         </div>
+
+        {!groups.length ? (
+          <div className="empty-inline">
+            <strong>아직 그룹이 없습니다.</strong>
+            <p>그룹을 만들면 세션을 특정 수업반에 배포할 수 있습니다.</p>
+            <Link className="quiet-link" href="/tutor/groups">
+              그룹 만들기
+            </Link>
+          </div>
+        ) : null}
 
         <div className="field">
           <label htmlFor="learningGoal">학습 목표</label>
           <textarea
             id="learningGoal"
             name="learningGoal"
-            defaultValue={selectedText?.learningGoal || "글의 핵심 관계를 스케치로 구조화하기"}
+            defaultValue={
+              selectedText?.learningGoal ||
+              "글의 핵심 관계를 맥락 스케치로 구조화하기"
+            }
           />
         </div>
 
@@ -206,7 +254,7 @@ export function SessionBuilder() {
           <span>{selectedText?.ageRange}</span>
           <span>{selectedText?.difficultyLevel}</span>
           <span>{selectedText?.structureType}</span>
-          <span>{selectedText?.status}</span>
+          <span>{selectedGroup?.name || "전체 학생"}</span>
         </div>
         <article className="text-body-preview">{selectedText?.body}</article>
       </aside>
