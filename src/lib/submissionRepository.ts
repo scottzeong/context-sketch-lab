@@ -6,6 +6,7 @@ const SUBMISSION_IMAGES_BUCKET = "submission-images";
 export type StoredSubmissionRecord = {
   id: string;
   sessionId: string;
+  studentId?: string;
   sessionTitle: string;
   studentName: string;
   studentExplanation: string;
@@ -22,6 +23,7 @@ export type StoredSubmissionRecord = {
 type SubmissionRow = {
   id: string;
   session_id: string;
+  student_id: string | null;
   learning_sessions?: { title: string | null } | null;
   student_name: string | null;
   student_explanation: string | null;
@@ -60,6 +62,7 @@ async function mapSubmission(row: SubmissionRow): Promise<StoredSubmissionRecord
   return {
     id: row.id,
     sessionId: row.session_id,
+    studentId: row.student_id || undefined,
     sessionTitle: row.learning_sessions?.title || "Untitled session",
     studentName: row.student_name || "Student",
     studentExplanation: row.student_explanation || "",
