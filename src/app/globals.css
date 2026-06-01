@@ -738,6 +738,116 @@ button:disabled {
   padding: 14px;
 }
 
+.reports-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(300px, 0.38fr) minmax(0, 1fr);
+}
+
+.reports-list {
+  position: sticky;
+  top: 18px;
+}
+
+.report-document {
+  display: grid;
+  gap: 16px;
+}
+
+.report-summary-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.report-summary-grid article {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.report-summary-grid span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.report-summary-grid strong {
+  color: var(--accent-strong);
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+}
+
+.report-section {
+  display: grid;
+  gap: 10px;
+}
+
+.report-draft {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: #202124;
+  font-family: "Pretendard", Arial, Helvetica, sans-serif;
+  line-height: 1.7;
+  max-height: none;
+  min-height: 260px;
+}
+
+.report-axis-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.report-axis-grid article {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.report-axis-grid span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.report-axis-grid strong {
+  color: var(--accent-strong);
+  font-size: 1.4rem;
+}
+
+.report-entry-list {
+  display: grid;
+  gap: 10px;
+}
+
+.report-entry-list article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.report-entry-list h4 {
+  margin: 8px 0 0;
+}
+
+.report-entry-list p {
+  color: #30343a;
+}
+
+.report-entry-list small {
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
 .feedback-shortcuts {
   display: grid;
   gap: 8px;
@@ -1653,6 +1763,7 @@ pre {
   .student-portfolio-layout,
   .student-feedback-layout,
   .admin-users-layout,
+  .reports-layout,
   .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,
@@ -1675,6 +1786,8 @@ pre {
   .analysis-summary-grid,
   .relation-list,
   .student-feedback-card-grid,
+  .report-summary-grid,
+  .report-axis-grid,
   .review-rubric-grid,
   .rubric-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1689,6 +1802,10 @@ pre {
   }
 
   .admin-users-list {
+    position: static;
+  }
+
+  .reports-list {
     position: static;
   }
 
@@ -1744,6 +1861,8 @@ pre {
   .analysis-summary-grid,
   .relation-list,
   .student-feedback-card-grid,
+  .report-summary-grid,
+  .report-axis-grid,
   .review-status-flow,
   .review-rubric-grid,
   .rubric-strip,
@@ -1768,5 +1887,66 @@ pre {
   .queue-meta {
     align-items: start;
     justify-items: start;
+  }
+}
+
+@media print {
+  :root {
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --ink: #111111;
+    --muted: #444444;
+    --line: #d0d0d0;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .sidebar,
+  .student-topbar,
+  .topbar,
+  .print-hidden {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block;
+    min-height: 0;
+  }
+
+  .shell-main {
+    padding: 0;
+  }
+
+  .reports-layout {
+    display: block;
+  }
+
+  .report-document {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .report-document-heading {
+    display: block;
+    margin-bottom: 18px;
+  }
+
+  .report-summary-grid,
+  .report-axis-grid {
+    break-inside: avoid;
+  }
+
+  .report-entry-list article,
+  .report-draft,
+  .report-summary-grid article,
+  .report-axis-grid article {
+    break-inside: avoid;
+  }
+
+  pre {
+    white-space: pre-wrap;
   }
 }
