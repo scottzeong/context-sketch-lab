@@ -25,3 +25,17 @@ export function requirePublicSupabaseEnv() {
     supabaseAnonKey: env.supabaseAnonKey
   };
 }
+
+export function requireSupabaseServiceRoleEnv() {
+  const { supabaseUrl } = requirePublicSupabaseEnv();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required.");
+  }
+
+  return {
+    supabaseUrl,
+    serviceRoleKey
+  };
+}

@@ -714,6 +714,28 @@ button:disabled {
   gap: 16px;
 }
 
+.admin-create-user-form {
+  align-items: end;
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 12px;
+}
+
+.admin-create-user-form .field {
+  margin-bottom: 0;
+}
+
+.admin-create-user-form button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+}
+
 .admin-profile-card {
   align-items: center;
   background: #fafaf8;
@@ -792,6 +814,28 @@ button:disabled {
 
 .parent-link-main p {
   margin-top: 4px;
+}
+
+.onboarding-page {
+  align-items: start;
+  padding-top: 6vh;
+}
+
+.onboarding-shell {
+  max-width: 820px;
+}
+
+.onboarding-panel {
+  padding: 0;
+}
+
+.onboarding-panel > .panel-heading,
+.onboarding-form {
+  padding: 18px;
+}
+
+.onboarding-form {
+  border-top: 1px solid var(--line);
 }
 
 .reports-layout {
@@ -2035,6 +2079,10 @@ pre {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .admin-create-user-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .student-task-panel {
     position: static;
   }
@@ -2091,6 +2139,7 @@ pre {
   .report-axis-grid,
   .parent-growth-strip,
   .parent-link-form,
+  .admin-create-user-form,
   .review-status-flow,
   .review-rubric-grid,
   .rubric-strip,

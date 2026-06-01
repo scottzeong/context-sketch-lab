@@ -82,9 +82,9 @@ export async function AppShell({
           </div>
           <div className="topbar-actions">
             {action}
-            <button className="icon-button" type="button" aria-label="Settings">
+            <Link className="icon-button" href="/onboarding" aria-label="Profile settings">
               <Settings aria-hidden="true" size={18} />
-            </button>
+            </Link>
           </div>
         </header>
 

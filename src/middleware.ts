@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database, UserRole } from "@/lib/supabase/database.types";
 
-const protectedPrefixes = ["/tutor", "/student", "/admin", "/parent"];
+const protectedPrefixes = ["/tutor", "/student", "/admin", "/parent", "/onboarding"];
 
 const roleHome: Record<UserRole, string> = {
   admin: "/tutor/dashboard",
@@ -32,6 +32,10 @@ function roleAllowed(pathname: string, role: UserRole) {
 
   if (pathname.startsWith("/parent")) {
     return role === "parent";
+  }
+
+  if (pathname.startsWith("/onboarding")) {
+    return true;
   }
 
   return true;
@@ -86,5 +90,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/tutor/:path*", "/student/:path*", "/admin/:path*", "/parent/:path*"]
+  matcher: [
+    "/tutor/:path*",
+    "/student/:path*",
+    "/admin/:path*",
+    "/parent/:path*",
+    "/onboarding/:path*",
+    "/onboarding"
+  ]
 };

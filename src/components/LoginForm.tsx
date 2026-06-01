@@ -38,7 +38,7 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, display_name, age_range, reading_level")
         .single();
 
       const roleHome = {
@@ -48,9 +48,17 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
         parent: "/parent/dashboard"
       } as const;
 
-      window.location.href = profile?.role ? roleHome[profile.role] : "/tutor/dashboard";
+      const needsOnboarding =
+        !profile?.display_name ||
+        (profile.role === "student" && (!profile.age_range || !profile.reading_level));
+
+      window.location.href = needsOnboarding
+        ? "/onboarding"
+        : profile?.role
+          ? roleHome[profile.role]
+          : "/onboarding";
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Login failed.");
+      setMessage(error instanceof Error ? error.message : "로그인에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -59,30 +67,30 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
   return (
     <form className="auth-form" onSubmit={onSubmit}>
       <div className="field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">이메일</label>
         <input
           autoComplete="email"
           disabled={!isConfigured}
           id="email"
           name="email"
-          placeholder="tutor@example.com"
+          placeholder="user@example.com"
           type="email"
         />
       </div>
       <div className="field">
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">비밀번호</label>
         <input
           autoComplete="current-password"
           disabled={!isConfigured}
           id="password"
           name="password"
-          placeholder="••••••••"
+          placeholder="비밀번호"
           type="password"
         />
       </div>
       <button disabled={isSubmitting || !isConfigured} type="submit">
         <LogIn aria-hidden="true" size={18} />
-        {isSubmitting ? "Signing in" : "Sign in"}
+        {isSubmitting ? "로그인 중" : "로그인"}
       </button>
       {message ? <p className="form-message">{message}</p> : null}
     </form>

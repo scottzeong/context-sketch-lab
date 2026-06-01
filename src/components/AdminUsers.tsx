@@ -2,7 +2,9 @@
 
 import {
   CheckCircle2,
+  KeyRound,
   Link2,
+  PlusCircle,
   Save,
   Search,
   ShieldCheck,
@@ -60,6 +62,7 @@ export function AdminUsers() {
   const [linkMessage, setLinkMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingLink, setIsSavingLink] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   async function loadAdminData() {
     const [nextProfiles, nextLinks] = await Promise.all([
@@ -214,6 +217,44 @@ export function AdminUsers() {
     }
   }
 
+  async function createUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsCreatingUser(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: String(formData.get("email") || ""),
+          password: String(formData.get("password") || ""),
+          displayName: String(formData.get("displayName") || ""),
+          role: String(formData.get("role") || "student"),
+          ageRange: String(formData.get("ageRange") || ""),
+          readingLevel: String(formData.get("readingLevel") || "")
+        })
+      });
+      const result = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "계정 생성에 실패했습니다.");
+      }
+
+      await loadAdminData();
+      event.currentTarget.reset();
+      setMessage("새 계정을 생성했습니다. 사용자에게 이메일과 임시 비밀번호를 전달하세요.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "계정 생성에 실패했습니다.");
+    } finally {
+      setIsCreatingUser(false);
+    }
+  }
+
   const roleCounts = profiles.reduce(
     (counts, profile) => ({
       ...counts,
@@ -283,6 +324,73 @@ export function AdminUsers() {
       </section>
 
       <div className="admin-detail-stack">
+        <section className="panel admin-invite-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Account Setup</p>
+              <h2>새 계정 생성</h2>
+            </div>
+            <span className="status">
+              <KeyRound aria-hidden="true" size={14} />
+              임시 비밀번호
+            </span>
+          </div>
+
+          <form className="admin-create-user-form" onSubmit={createUser}>
+            <div className="field">
+              <label htmlFor="newEmail">이메일</label>
+              <input id="newEmail" name="email" placeholder="user@example.com" type="email" />
+            </div>
+            <div className="field">
+              <label htmlFor="newDisplayName">표시 이름</label>
+              <input id="newDisplayName" name="displayName" placeholder="사용자 이름" />
+            </div>
+            <div className="field">
+              <label htmlFor="newRole">역할</label>
+              <select id="newRole" name="role" defaultValue="student">
+                {(Object.keys(roleLabels) as UserRole[]).map((role) => (
+                  <option key={role} value={role}>
+                    {roleLabels[role]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="newPassword">임시 비밀번호</label>
+              <input
+                autoComplete="new-password"
+                id="newPassword"
+                name="password"
+                placeholder="6자 이상"
+                type="password"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="newAgeRange">연령대</label>
+              <select id="newAgeRange" name="ageRange" defaultValue="">
+                <option value="">미설정</option>
+                {(Object.keys(ageRangeLabels) as AgeRange[]).map((ageRange) => (
+                  <option key={ageRange} value={ageRange}>
+                    {ageRangeLabels[ageRange]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="newReadingLevel">읽기 수준</label>
+              <input
+                id="newReadingLevel"
+                name="readingLevel"
+                placeholder="예: 초등 중급"
+              />
+            </div>
+            <button disabled={isCreatingUser} type="submit">
+              <PlusCircle aria-hidden="true" size={17} />
+              {isCreatingUser ? "생성 중" : "계정 생성"}
+            </button>
+          </form>
+        </section>
+
         <section className="panel admin-user-detail">
           {selectedProfile ? (
             <form key={selectedProfile.id} onSubmit={saveProfile}>
