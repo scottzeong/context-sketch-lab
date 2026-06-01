@@ -855,6 +855,13 @@ button:disabled {
   grid-template-columns: minmax(300px, 0.4fr) minmax(0, 1fr);
 }
 
+.parent-dashboard-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(300px, 0.38fr) minmax(0, 1fr);
+}
+
 .groups-list {
   position: sticky;
   top: 18px;
@@ -1831,6 +1838,7 @@ pre {
   .admin-users-layout,
   .reports-layout,
   .groups-layout,
+  .parent-dashboard-layout,
   .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,

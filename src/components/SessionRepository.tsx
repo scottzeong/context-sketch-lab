@@ -3,6 +3,7 @@
 import { CalendarDays, ClipboardCheck, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getLearningGroups, LearningGroupRecord } from "@/lib/groupRepository";
 import {
   deleteStoredSession,
   getStoredSessions,
@@ -23,18 +24,24 @@ function formatDate(value?: string) {
 
 export function SessionRepository() {
   const [sessions, setSessions] = useState<StoredSessionRecord[]>([]);
+  const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [groupFilter, setGroupFilter] = useState("all");
   const [message, setMessage] = useState<string | null>(null);
 
   async function refresh() {
     try {
-      const nextSessions = await getStoredSessions();
+      const [nextSessions, nextGroups] = await Promise.all([
+        getStoredSessions(),
+        getLearningGroups()
+      ]);
       setSessions(nextSessions);
+      setGroups(nextGroups);
       setSelectedId((current) => current || nextSessions[0]?.id || null);
       setMessage(null);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Session load failed.");
+      setMessage(error instanceof Error ? error.message : "세션을 불러오지 못했습니다.");
     }
   }
 
@@ -48,15 +55,20 @@ export function SessionRepository() {
   const filteredSessions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
-    if (!normalized) {
-      return sessions;
-    }
+    return sessions.filter((session) => {
+      const matchesGroup =
+        groupFilter === "all" ||
+        (groupFilter === "ungrouped" && !session.groupId) ||
+        session.groupId === groupFilter;
+      const matchesQuery =
+        !normalized ||
+        [session.title, session.textTitle, session.groupName, session.learningGoal].some(
+          (value) => value.toLowerCase().includes(normalized)
+        );
 
-    return sessions.filter((session) =>
-      [session.title, session.textTitle, session.groupName, session.learningGoal]
-        .some((value) => value.toLowerCase().includes(normalized))
-    );
-  }, [query, sessions]);
+      return matchesGroup && matchesQuery;
+    });
+  }, [groupFilter, query, sessions]);
 
   const selectedSession =
     sessions.find((item) => item.id === selectedId) || filteredSessions[0] || null;
@@ -102,6 +114,23 @@ export function SessionRepository() {
           />
         </label>
 
+        <div className="field">
+          <label htmlFor="session-group-filter">그룹 필터</label>
+          <select
+            id="session-group-filter"
+            onChange={(event) => setGroupFilter(event.target.value)}
+            value={groupFilter}
+          >
+            <option value="all">전체</option>
+            <option value="ungrouped">전체 학생 세션</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="text-list">
           {filteredSessions.length ? (
             filteredSessions.map((session) => (
@@ -116,7 +145,7 @@ export function SessionRepository() {
                 <span>
                   <strong>{session.title}</strong>
                   <small>
-                    {session.groupName} · {session.status} ·{" "}
+                    {session.groupName || "전체 학생"} · {session.status} ·{" "}
                     {formatDate(session.scheduledFor)}
                   </small>
                 </span>
@@ -125,8 +154,8 @@ export function SessionRepository() {
             ))
           ) : (
             <div className="empty-inline">
-              <strong>저장된 세션이 없습니다.</strong>
-              <p>저장된 글을 골라 첫 세션을 만들어 보세요.</p>
+              <strong>조건에 맞는 세션이 없습니다.</strong>
+              <p>그룹 필터나 검색어를 조정해 보세요.</p>
             </div>
           )}
         </div>
@@ -160,7 +189,7 @@ export function SessionRepository() {
 
             <div className="metadata-grid">
               <span>글: {selectedSession.textTitle}</span>
-              <span>그룹: {selectedSession.groupName}</span>
+              <span>그룹: {selectedSession.groupName || "전체 학생"}</span>
               <span>템플릿: {selectedSession.worksheetTemplate}</span>
               <span>
                 <CalendarDays aria-hidden="true" size={14} />
@@ -176,22 +205,22 @@ export function SessionRepository() {
             <div className="next-grid">
               <div>
                 <strong>학생 화면</strong>
-                <p>다음 단계에서 학생 세션 상세와 제출 화면으로 연결됩니다.</p>
+                <p>published 상태가 되면 배정 그룹의 학생에게 표시됩니다.</p>
               </div>
               <div>
                 <strong>제출물</strong>
-                <p>published 상태가 되면 제출 대기 목록에 나타나도록 확장합니다.</p>
+                <p>학생 제출 후 Tutor Review Workspace에서 검토합니다.</p>
               </div>
               <div>
-                <strong>튜터 리뷰</strong>
-                <p>학생 스케치와 설명을 확인하고 피드백 초안을 만듭니다.</p>
+                <strong>그룹 배포</strong>
+                <p>그룹이 없는 세션은 전체 학생 대상으로 표시됩니다.</p>
               </div>
             </div>
           </>
         ) : (
           <div className="empty-state">
             <strong>선택된 세션이 없습니다.</strong>
-            <p>새 세션을 만들면 이곳에서 상태와 흐름을 관리합니다.</p>
+            <p>새 세션을 만들면 이곳에서 상태와 그룹을 관리합니다.</p>
             <Link className="primary-link" href="/tutor/sessions/new">
               세션 만들기
             </Link>

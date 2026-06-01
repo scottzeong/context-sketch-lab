@@ -8,7 +8,7 @@ const roleHome: Record<UserRole, string> = {
   admin: "/tutor/dashboard",
   tutor: "/tutor/dashboard",
   student: "/student/dashboard",
-  parent: "/student/portfolio"
+  parent: "/parent/dashboard"
 };
 
 function isProtectedPath(pathname: string) {

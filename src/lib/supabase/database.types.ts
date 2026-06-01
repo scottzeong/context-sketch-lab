@@ -96,6 +96,35 @@ export type Database = {
         };
         Relationships: [];
       };
+      parent_student_links: {
+        Row: {
+          id: string;
+          parent_id: string;
+          student_id: string;
+          relationship: string | null;
+          status: "pending" | "approved" | "revoked";
+          approved_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parent_id: string;
+          student_id: string;
+          relationship?: string | null;
+          status?: "pending" | "approved" | "revoked";
+          approved_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          relationship?: string | null;
+          status?: "pending" | "approved" | "revoked";
+          approved_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       texts: {
         Row: {
           id: string;

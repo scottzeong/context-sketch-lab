@@ -3,6 +3,7 @@
 import { ArrowRight, BookOpenText, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getCurrentStudentGroupIds } from "@/lib/groupRepository";
 import { getStoredSessions, StoredSessionRecord } from "@/lib/sessionRepository";
 import {
   getStoredSubmissions,
@@ -15,18 +16,36 @@ export function StudentDashboard() {
     new Set()
   );
   const [submissions, setSubmissions] = useState<StoredSubmissionRecord[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadDashboard() {
-      const [storedSessions, storedSubmissions] = await Promise.all([
-        getStoredSessions(),
-        getStoredSubmissions()
-      ]);
-      setSessions(storedSessions.filter((session) => session.status === "published"));
-      setSubmittedSessionIds(
-        new Set(storedSubmissions.map((submission) => submission.sessionId))
-      );
-      setSubmissions(storedSubmissions);
+      try {
+        const [storedSessions, storedSubmissions, groupIds] = await Promise.all([
+          getStoredSessions(),
+          getStoredSubmissions(),
+          getCurrentStudentGroupIds()
+        ]);
+
+        setSessions(
+          storedSessions.filter(
+            (session) =>
+              session.status === "published" &&
+              (!session.groupId || groupIds.includes(session.groupId))
+          )
+        );
+        setSubmittedSessionIds(
+          new Set(storedSubmissions.map((submission) => submission.sessionId))
+        );
+        setSubmissions(storedSubmissions);
+        setMessage(null);
+      } catch (error) {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "학생 대시보드를 불러오지 못했습니다."
+        );
+      }
     }
 
     void loadDashboard();
@@ -53,6 +72,8 @@ export function StudentDashboard() {
           <span className="status done">{stats.open} open</span>
         </div>
 
+        {message ? <p className="save-message">{message}</p> : null}
+
         <div className="student-session-list">
           {hasSessions ? (
             sessions.map((session) => {
@@ -62,12 +83,12 @@ export function StudentDashboard() {
                 <article className="student-session-card" key={session.id}>
                   <div>
                     <span className={submitted ? "status done" : "status review"}>
-                      {submitted ? "submitted" : "ready"}
+                      {submitted ? "제출 완료" : "준비됨"}
                     </span>
                     <h3>{session.title}</h3>
                     <p>{session.learningGoal}</p>
                     <small>
-                      {session.groupName} · {session.worksheetTemplate}
+                      {session.groupName || "전체 학생"} · {session.worksheetTemplate}
                     </small>
                   </div>
                   <Link
@@ -83,7 +104,10 @@ export function StudentDashboard() {
           ) : (
             <div className="empty-inline">
               <strong>아직 배포된 세션이 없습니다.</strong>
-              <p>튜터가 세션을 published 상태로 바꾸면 여기에 표시됩니다.</p>
+              <p>
+                튜터가 내 그룹 또는 전체 학생 대상으로 세션을 공개하면 여기에
+                표시됩니다.
+              </p>
             </div>
           )}
         </div>

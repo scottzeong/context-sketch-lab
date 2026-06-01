@@ -9,10 +9,12 @@ import {
   TrendingUp
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { getLearningGroups, LearningGroupRecord } from "@/lib/groupRepository";
 import {
   getPublishedPortfolioEntries,
   PortfolioEntry
 } from "@/lib/portfolioRepository";
+import { getStoredSessions, StoredSessionRecord } from "@/lib/sessionRepository";
 
 type StudentReportGroup = {
   studentName: string;
@@ -114,16 +116,27 @@ function buildReportDraft(group: StudentReportGroup) {
 
 export function StudentReports() {
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
+  const [sessions, setSessions] = useState<StoredSessionRecord[]>([]);
+  const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [groupFilter, setGroupFilter] = useState("all");
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadReports() {
       try {
-        const nextEntries = await getPublishedPortfolioEntries();
+        const [nextEntries, nextSessions, nextGroups] = await Promise.all([
+          getPublishedPortfolioEntries(),
+          getStoredSessions(),
+          getLearningGroups()
+        ]);
         setEntries(nextEntries);
-        setSelectedStudent((current) => current || nextEntries[0]?.submission.studentName || null);
+        setSessions(nextSessions);
+        setGroups(nextGroups);
+        setSelectedStudent(
+          (current) => current || nextEntries[0]?.submission.studentName || null
+        );
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "리포트를 불러오지 못했습니다.");
       }
@@ -132,10 +145,28 @@ export function StudentReports() {
     void loadReports();
   }, []);
 
-  const groups = useMemo(() => {
+  const sessionById = useMemo(
+    () => new Map(sessions.map((session) => [session.id, session])),
+    [sessions]
+  );
+
+  const groupFilteredEntries = useMemo(() => {
+    if (groupFilter === "all") {
+      return entries;
+    }
+
+    return entries.filter((entry) => {
+      const session = sessionById.get(entry.submission.sessionId);
+      return groupFilter === "ungrouped"
+        ? !session?.groupId
+        : session?.groupId === groupFilter;
+    });
+  }, [entries, groupFilter, sessionById]);
+
+  const groupsByStudent = useMemo(() => {
     const grouped = new Map<string, PortfolioEntry[]>();
 
-    entries.forEach((entry) => {
+    groupFilteredEntries.forEach((entry) => {
       const studentName = entry.submission.studentName || "Student";
       grouped.set(studentName, [...(grouped.get(studentName) || []), entry]);
     });
@@ -150,25 +181,25 @@ export function StudentReports() {
         )
       }))
       .sort((a, b) => a.studentName.localeCompare(b.studentName));
-  }, [entries]);
+  }, [groupFilteredEntries]);
 
   const filteredGroups = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
     if (!normalized) {
-      return groups;
+      return groupsByStudent;
     }
 
-    return groups.filter((group) =>
+    return groupsByStudent.filter((group) =>
       [
         group.studentName,
         ...group.entries.map((entry) => entry.submission.sessionTitle)
       ].some((value) => value.toLowerCase().includes(normalized))
     );
-  }, [groups, query]);
+  }, [groupsByStudent, query]);
 
   const selectedGroup =
-    groups.find((group) => group.studentName === selectedStudent) ||
+    groupsByStudent.find((group) => group.studentName === selectedStudent) ||
     filteredGroups[0] ||
     null;
 
@@ -197,7 +228,7 @@ export function StudentReports() {
             <p className="section-kicker">Reports</p>
             <h2>학생 리포트</h2>
           </div>
-          <span className="status done">{groups.length} students</span>
+          <span className="status done">{groupsByStudent.length} students</span>
         </div>
 
         {message ? <p className="save-message">{message}</p> : null}
@@ -211,6 +242,26 @@ export function StudentReports() {
             value={query}
           />
         </label>
+
+        <div className="field">
+          <label htmlFor="report-group-filter">그룹 필터</label>
+          <select
+            id="report-group-filter"
+            onChange={(event) => {
+              setGroupFilter(event.target.value);
+              setSelectedStudent(null);
+            }}
+            value={groupFilter}
+          >
+            <option value="all">전체</option>
+            <option value="ungrouped">전체 학생 세션</option>
+            {groups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="text-list">
           {filteredGroups.length ? (

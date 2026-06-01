@@ -45,7 +45,7 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
         admin: "/tutor/dashboard",
         tutor: "/tutor/dashboard",
         student: "/student/dashboard",
-        parent: "/student/portfolio"
+        parent: "/parent/dashboard"
       } as const;
 
       window.location.href = profile?.role ? roleHome[profile.role] : "/tutor/dashboard";

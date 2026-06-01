@@ -136,6 +136,21 @@ export async function getOrganizationStudents(): Promise<GroupStudentRecord[]> {
   return ((data || []) as StudentRow[]).map(mapStudent);
 }
 
+export async function getCurrentStudentGroupIds(): Promise<string[]> {
+  const { supabase, user } = await requireCurrentProfile();
+  const { data, error } = await supabase
+    .from("learning_group_members")
+    .select("learning_group_id")
+    .eq("profile_id", user.id)
+    .eq("member_role", "student");
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []).map((row) => row.learning_group_id);
+}
+
 export async function saveLearningGroup(record: {
   id?: string;
   name: string;
