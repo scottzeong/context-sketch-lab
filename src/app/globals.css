@@ -508,6 +508,130 @@ button:disabled {
   gap: 16px;
 }
 
+.enhanced-review-workspace {
+  gap: 18px;
+}
+
+.review-status-flow {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.review-status-flow span {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 0.55rem 0.7rem;
+  text-align: center;
+}
+
+.review-status-flow span.done {
+  background: var(--soft);
+  border-color: #bdd8d0;
+  color: var(--accent-strong);
+}
+
+.review-submission-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(320px, 0.86fr) minmax(0, 1fr);
+}
+
+.review-image-frame {
+  align-items: center;
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  min-height: 420px;
+  overflow: hidden;
+  place-items: center;
+  text-align: center;
+}
+
+.review-image-frame img {
+  display: block;
+  max-height: 620px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.review-student-notes {
+  display: grid;
+  gap: 12px;
+}
+
+.review-student-notes article {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.review-student-notes p {
+  color: #30343a;
+  white-space: pre-wrap;
+}
+
+.review-input-panel textarea {
+  min-height: 112px;
+}
+
+.review-feedback-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.publish-button:disabled {
+  cursor: not-allowed;
+}
+
+.review-feedback-grid {
+  margin-bottom: 0;
+}
+
+.review-rubric-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.review-rubric-grid article {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+.review-rubric-grid strong {
+  font-size: 0.84rem;
+}
+
+.review-rubric-grid span {
+  color: var(--accent-strong);
+  font-size: 1.22rem;
+  font-weight: 900;
+}
+
+.review-rubric-grid p {
+  font-size: 0.84rem;
+}
+
+.review-publish-note {
+  margin-bottom: 0;
+}
+
+.review-json-details pre {
+  max-height: 340px;
+}
+
 .feedback-draft-grid {
   display: grid;
   gap: 12px;
@@ -1269,6 +1393,7 @@ pre {
   .submission-grid,
   .feedback-detail-grid,
   .portfolio-grid,
+  .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,
   .workbench {
@@ -1289,6 +1414,7 @@ pre {
   .insight-grid,
   .analysis-summary-grid,
   .relation-list,
+  .review-rubric-grid,
   .rubric-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1347,6 +1473,8 @@ pre {
   .insight-grid,
   .analysis-summary-grid,
   .relation-list,
+  .review-status-flow,
+  .review-rubric-grid,
   .rubric-strip,
   .nav-list {
     grid-template-columns: 1fr;
