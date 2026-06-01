@@ -8,7 +8,8 @@ import {
   GraduationCap,
   Settings,
   Sparkles,
-  Users
+  Users,
+  UserRoundCog
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/tutor/texts", label: "Texts", icon: BookOpenText },
   { href: "/tutor/sessions", label: "Sessions", icon: ClipboardCheck },
   { href: "/tutor/reports", label: "Reports", icon: BarChart3 },
+  { href: "/admin/users", label: "Admin Users", icon: UserRoundCog },
   { href: "/student/dashboard", label: "Student View", icon: GraduationCap },
   { href: "/manual", label: "Manual", icon: LibraryBig }
 ];

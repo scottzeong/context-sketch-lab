@@ -670,6 +670,74 @@ button:disabled {
   font-weight: 900;
 }
 
+.admin-users-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(300px, 0.42fr) minmax(0, 1fr);
+}
+
+.admin-users-list {
+  position: sticky;
+  top: 18px;
+}
+
+.admin-role-summary {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+
+.admin-role-summary span {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  justify-content: space-between;
+  padding: 0.55rem 0.7rem;
+}
+
+.admin-role-summary strong {
+  color: var(--accent-strong);
+}
+
+.admin-user-detail {
+  min-height: 620px;
+}
+
+.admin-profile-card {
+  align-items: center;
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin-bottom: 16px;
+  padding: 14px;
+}
+
+.admin-profile-card strong,
+.admin-profile-card p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-profile-note {
+  background: var(--soft);
+  border: 1px solid #bdd8d0;
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 14px;
+}
+
 .feedback-shortcuts {
   display: grid;
   gap: 8px;
@@ -1584,6 +1652,7 @@ pre {
   .portfolio-grid,
   .student-portfolio-layout,
   .student-feedback-layout,
+  .admin-users-layout,
   .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,
@@ -1616,6 +1685,10 @@ pre {
   }
 
   .repository-list {
+    position: static;
+  }
+
+  .admin-users-list {
     position: static;
   }
 
