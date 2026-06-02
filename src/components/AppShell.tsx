@@ -30,12 +30,13 @@ const navItems: NavItem[] = [
   { href: "/tutor/workbench", label: "AI Workbench", icon: Sparkles, roles: ["tutor"] },
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["student"] },
   { href: "/student/portfolio", label: "Portfolio", icon: LibraryBig, roles: ["student"] },
+  { href: "/parent/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["parent"] },
   { href: "/tutor/groups", label: "Classes", icon: Users, roles: ["admin", "tutor"] },
   { href: "/tutor/texts", label: "Texts", icon: BookOpenText, roles: ["admin", "tutor"] },
   { href: "/tutor/sessions", label: "Sessions", icon: ClipboardCheck, roles: ["admin", "tutor"] },
   { href: "/tutor/submissions", label: "Submissions", icon: Inbox, roles: ["tutor"] },
   { href: "/tutor/reports", label: "Reports", icon: BarChart3, roles: ["admin", "tutor"] },
-  { href: "/manual", label: "Manual", icon: LibraryBig, roles: ["admin", "tutor", "student"] }
+  { href: "/manual", label: "Manual", icon: LibraryBig, roles: ["admin", "tutor", "student", "parent"] }
 ];
 
 const workspaceLabel: Record<UserRole, string> = {
