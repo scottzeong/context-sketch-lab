@@ -9,37 +9,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const metrics = [
-  { label: "진행 중 세션", value: "4", detail: "오늘 검토 2건", tone: "green" },
-  { label: "승인 대기", value: "7", detail: "피드백 초안 포함", tone: "amber" },
-  { label: "이번 주 글 작성", value: "12", detail: "구조 분석 9건", tone: "blue" },
-  { label: "활동 학생", value: "38", detail: "3개 Class", tone: "neutral" }
-];
+type QueueRow = {
+  id: string;
+  student_name: string | null;
+  status: "submitted" | "under_review" | "feedback_published";
+  updated_at: string;
+  learning_sessions?: { title: string | null; group_name: string | null } | null;
+};
 
-const reviewQueue = [
-  {
-    student: "김민수",
-    group: "9-10세 읽기 A",
-    session: "발표 전의 떨림",
-    status: "관찰 입력 필요",
-    time: "12분 전"
-  },
-  {
-    student: "이서윤",
-    group: "11-12세 구조화 B",
-    session: "작은 선택이 만든 변화",
-    status: "피드백 초안 생성",
-    time: "35분 전"
-  },
-  {
-    student: "박도윤",
-    group: "9-10세 읽기 A",
-    session: "새 친구와 다른 기억",
-    status: "승인 대기",
-    time: "1시간 전"
-  }
-];
+const submissionStatusLabels: Record<QueueRow["status"], string> = {
+  submitted: "관찰 입력 필요",
+  under_review: "피드백 작성 중",
+  feedback_published: "피드백 공개"
+};
 
 const workflow = [
   {
@@ -64,7 +48,90 @@ const workflow = [
   }
 ];
 
-export default function TutorDashboardPage() {
+function formatRelativeTime(value: string) {
+  const diffMs = Date.now() - new Date(value).getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60_000));
+
+  if (diffMinutes < 1) {
+    return "방금 전";
+  }
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes}분 전`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  if (diffHours < 24) {
+    return `${diffHours}시간 전`;
+  }
+
+  return `${Math.floor(diffHours / 24)}일 전`;
+}
+
+export default async function TutorDashboardPage() {
+  const supabase = await createSupabaseServerClient();
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 7);
+
+  const [
+    publishedSessions,
+    pendingSubmissions,
+    recentTexts,
+    classes,
+    queueResult
+  ] = await Promise.all([
+    supabase
+      .from("learning_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published"),
+    supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["submitted", "under_review"]),
+    supabase
+      .from("texts")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", weekStart.toISOString()),
+    supabase
+      .from("learning_groups")
+      .select("id", { count: "exact", head: true }),
+    supabase
+      .from("submissions")
+      .select("id, student_name, status, updated_at, learning_sessions(title, group_name)")
+      .in("status", ["submitted", "under_review"])
+      .order("updated_at", { ascending: false })
+      .limit(5)
+  ]);
+
+  const metrics = [
+    {
+      label: "진행 중 세션",
+      value: String(publishedSessions.count || 0),
+      detail: "공개 상태 세션",
+      tone: "green"
+    },
+    {
+      label: "검토 대기",
+      value: String(pendingSubmissions.count || 0),
+      detail: "제출/검토 중 제출물",
+      tone: "amber"
+    },
+    {
+      label: "이번 주 글 작성",
+      value: String(recentTexts.count || 0),
+      detail: "최근 7일 저장 글",
+      tone: "blue"
+    },
+    {
+      label: "운영 Class",
+      value: String(classes.count || 0),
+      detail: "등록된 Class",
+      tone: "neutral"
+    }
+  ];
+  const reviewQueue = (queueResult.data || []) as unknown as QueueRow[];
+
   return (
     <AppShell
       title="Tutor Dashboard"
@@ -101,22 +168,29 @@ export default function TutorDashboardPage() {
           </div>
 
           <div className="queue-list">
-            {reviewQueue.map((item) => (
-              <article className="queue-item" key={`${item.student}-${item.session}`}>
-                <div>
-                  <strong>{item.student}</strong>
-                  <p>{item.session}</p>
-                  <small>{item.group}</small>
-                </div>
-                <div className="queue-meta">
-                  <span className="status review">{item.status}</span>
-                  <small>
-                    <Clock3 aria-hidden="true" size={14} />
-                    {item.time}
-                  </small>
-                </div>
-              </article>
-            ))}
+            {reviewQueue.length ? (
+              reviewQueue.map((item) => (
+                <article className="queue-item" key={item.id}>
+                  <div>
+                    <strong>{item.student_name || "학생"}</strong>
+                    <p>{item.learning_sessions?.title || "제목 없는 세션"}</p>
+                    <small>{item.learning_sessions?.group_name || "Class 미지정"}</small>
+                  </div>
+                  <div className="queue-meta">
+                    <span className="status review">{submissionStatusLabels[item.status]}</span>
+                    <small>
+                      <Clock3 aria-hidden="true" size={14} />
+                      {formatRelativeTime(item.updated_at)}
+                    </small>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <div className="empty-state compact">
+                <strong>검토 대기 제출물이 없습니다.</strong>
+                <p>내일부터 실제 수업 데이터를 입력하면 이 영역에 최신 제출물이 표시됩니다.</p>
+              </div>
+            )}
           </div>
         </div>
 

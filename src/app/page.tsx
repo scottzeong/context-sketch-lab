@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { LoginForm } from "@/components/LoginForm";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 
@@ -22,11 +21,6 @@ export default function Home() {
           로터파덴은 아이들이 복잡한 정보 속에서 자신만의 생각의 실마리를 찾아내는
           논리적 사고력과 맥락구조화 능력을 길러줍니다.
         </p>
-        <div className="front-actions">
-          <Link className="quiet-link" href="/manual">
-            매뉴얼 보기
-          </Link>
-        </div>
       </section>
 
       <section className="auth-panel front-login-panel" aria-label="로그인">

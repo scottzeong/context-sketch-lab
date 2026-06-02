@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database, UserRole } from "@/lib/supabase/database.types";
 
-const protectedPrefixes = ["/tutor", "/student", "/admin", "/parent", "/onboarding"];
+const protectedPrefixes = ["/tutor", "/student", "/admin", "/parent", "/onboarding", "/manual"];
 
 const roleHome: Record<UserRole, string> = {
   admin: "/admin/users",
@@ -104,6 +104,7 @@ export const config = {
     "/admin/:path*",
     "/parent/:path*",
     "/onboarding/:path*",
-    "/onboarding"
+    "/onboarding",
+    "/manual"
   ]
 };

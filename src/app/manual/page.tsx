@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppShell } from "@/components/AppShell";
 
 const sections = [
   {
@@ -40,28 +40,31 @@ const sections = [
 
 export default function ManualPage() {
   return (
-    <main className="manual-page">
-      <section className="manual-hero">
-        <p className="eyebrow">HTML Manual</p>
-        <h1>Roter Faden 매뉴얼</h1>
-        <p>역할별 핵심 사용 흐름과 운영 기준을 한 화면에서 확인합니다.</p>
-        <Link className="primary-link" href="/login">
-          로그인으로 이동
-        </Link>
-      </section>
+    <AppShell
+      title="Manual"
+      eyebrow="Roter Faden"
+      description="역할별 핵심 사용 흐름과 운영 기준을 확인합니다."
+    >
+      <main className="manual-page">
+        <section className="manual-hero">
+          <p className="eyebrow">HTML Manual</p>
+          <h1>Roter Faden 매뉴얼</h1>
+          <p>역할별 핵심 사용 흐름과 운영 기준을 한 화면에서 확인합니다.</p>
+        </section>
 
-      <section className="manual-grid">
-        {sections.map((section) => (
-          <article className="panel" key={section.title}>
-            <h2>{section.title}</h2>
-            <ul className="manual-list">
-              {section.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </section>
-    </main>
+        <section className="manual-grid">
+          {sections.map((section) => (
+            <article className="panel" key={section.title}>
+              <h2>{section.title}</h2>
+              <ul className="manual-list">
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </section>
+      </main>
+    </AppShell>
   );
 }
