@@ -50,6 +50,7 @@ async function signedImageUrl(path?: string) {
     .createSignedUrl(path, 60 * 30);
 
   if (error) {
+    console.warn("Submission image signed URL failed", error.message);
     return undefined;
   }
 
@@ -91,7 +92,7 @@ async function selectSubmissions(sessionId?: string) {
   const { data, error } = await query;
 
   if (error) {
-    throw error;
+    throw new Error(`제출 저장에 실패했습니다. ${error.message}`);
   }
 
   return Promise.all(((data || []) as unknown as SubmissionRow[]).map(mapSubmission));
@@ -159,7 +160,7 @@ export async function saveStoredSubmission(
       .upload(path, record.imageFile, { upsert: true });
 
     if (uploadError) {
-      throw uploadError;
+      throw new Error(`이미지 업로드에 실패했습니다. ${uploadError.message}`);
     }
 
     const { error: imageError } = await supabase.from("submission_images").insert({
@@ -169,7 +170,7 @@ export async function saveStoredSubmission(
     });
 
     if (imageError) {
-      throw imageError;
+      throw new Error(`제출 이미지 연결에 실패했습니다. ${imageError.message}`);
     }
   }
 

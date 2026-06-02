@@ -48,9 +48,7 @@ export function StudentPortfolio() {
         setEntries(await getPublishedPortfolioEntries());
         setMessage(null);
       } catch (error) {
-        setMessage(
-          error instanceof Error ? error.message : "포트폴리오를 불러오지 못했습니다."
-        );
+        setMessage(error instanceof Error ? error.message : "포트폴리오를 불러오지 못했습니다.");
       } finally {
         setIsLoading(false);
       }
@@ -107,7 +105,7 @@ export function StudentPortfolio() {
         ) : (
           <div className="empty-inline">
             <strong>아직 공개된 포트폴리오 기록이 없습니다.</strong>
-            <p>튜터가 피드백을 공개하면 이곳에 성장 기록이 누적됩니다.</p>
+            <p>튜터가 피드백을 보내면 이곳에 성장 기록이 쌓입니다.</p>
           </div>
         )}
 

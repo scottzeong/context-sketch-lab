@@ -21,7 +21,7 @@ export function StudentSubmissionForm({ sessionId }: StudentSubmissionFormProps)
       try {
         setSession((await getStoredSessions()).find((item) => item.id === sessionId) || null);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Session load failed.");
+        setMessage(error instanceof Error ? error.message : "세션을 불러오지 못했습니다.");
       }
     }
 
@@ -40,14 +40,15 @@ export function StudentSubmissionForm({ sessionId }: StudentSubmissionFormProps)
     setMessage(null);
 
     try {
-      const formData = new FormData(event.currentTarget);
+      const form = event.currentTarget;
+      const formData = new FormData(form);
       const image = formData.get("image");
       const imageFile = image instanceof File && image.size > 0 ? image : null;
 
       await saveStoredSubmission({
         sessionId: session.id,
         sessionTitle: session.title,
-        studentName: String(formData.get("studentName") || "Demo Student"),
+        studentName: String(formData.get("studentName") || "Student"),
         studentExplanation: String(formData.get("studentExplanation") || ""),
         importantConnection: String(formData.get("importantConnection") || ""),
         difficultPart: String(formData.get("difficultPart") || ""),
@@ -57,7 +58,7 @@ export function StudentSubmissionForm({ sessionId }: StudentSubmissionFormProps)
       });
 
       setMessage("제출이 완료되었습니다. 튜터 검토 후 피드백이 공개됩니다.");
-      event.currentTarget.reset();
+      form.reset();
       setPreviewUrl(null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "제출 중 오류가 발생했습니다.");
@@ -94,7 +95,7 @@ export function StudentSubmissionForm({ sessionId }: StudentSubmissionFormProps)
 
         <div className="field">
           <label htmlFor="studentName">이름</label>
-          <input id="studentName" name="studentName" defaultValue="Demo Student" />
+          <input id="studentName" name="studentName" placeholder="이름을 입력하세요" />
         </div>
 
         <div className="field">
@@ -125,7 +126,7 @@ export function StudentSubmissionForm({ sessionId }: StudentSubmissionFormProps)
           <input
             id="importantConnection"
             name="importantConnection"
-            placeholder="예: 웃음소리 -> 오해 -> 긴장"
+            placeholder="예: 단서 -> 오해 -> 긴장"
           />
         </div>
 

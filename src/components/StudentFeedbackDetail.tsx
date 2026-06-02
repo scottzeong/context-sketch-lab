@@ -49,7 +49,7 @@ export function StudentFeedbackDetail({ submissionId }: StudentFeedbackDetailPro
     return (
       <section className="panel empty-state">
         <strong>아직 공개된 피드백이 없습니다.</strong>
-        <p>튜터가 피드백을 공개하면 이 화면에서 확인할 수 있습니다.</p>
+        <p>튜터가 피드백을 보내면 이 화면에서 확인할 수 있습니다.</p>
         <Link className="primary-link" href="/student/portfolio">
           <ArrowLeft aria-hidden="true" size={17} />
           포트폴리오로 이동
@@ -87,12 +87,12 @@ export function StudentFeedbackDetail({ submissionId }: StudentFeedbackDetailPro
           <article>
             <Link2 aria-hidden="true" size={20} />
             <h3>내가 찾은 핵심 연결</h3>
-            <p>{submission.importantConnection || "입력한 핵심 연결이 없습니다."}</p>
+            <p>{submission.importantConnection || "입력된 핵심 연결이 없습니다."}</p>
           </article>
           <article>
             <Lightbulb aria-hidden="true" size={20} />
             <h3>내 설명</h3>
-            <p>{submission.studentExplanation || "입력한 설명이 없습니다."}</p>
+            <p>{submission.studentExplanation || "입력된 설명이 없습니다."}</p>
           </article>
           <article>
             <Target aria-hidden="true" size={20} />
@@ -123,7 +123,7 @@ export function StudentFeedbackDetail({ submissionId }: StudentFeedbackDetailPro
           ) : (
             <div>
               <ImageIcon aria-hidden="true" size={28} />
-              <p>제출된 이미지가 없습니다.</p>
+              <p>제출 이미지가 없습니다.</p>
             </div>
           )}
         </div>

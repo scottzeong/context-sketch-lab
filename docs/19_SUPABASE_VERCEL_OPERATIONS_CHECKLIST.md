@@ -8,7 +8,7 @@
 - Storage에 `submission-images` bucket이 있는가?
 - bucket이 private인가?
 
-## SQL migration 실행 순서
+## SQL Migration 실행 순서
 
 아래 순서대로 실행합니다.
 
@@ -26,6 +26,7 @@
 011_config_options.sql
 012_rubric_config_options.sql
 013_admin_option_prompts_and_weights.sql
+014_submission_image_rls_fix.sql
 ```
 
 ## SQL 실행 후 확인
@@ -39,6 +40,8 @@
 - 루브릭 가중치 항목이 저장되는가?
 - RLS가 모든 주요 테이블에 활성화되어 있는가?
 - `submission-images` Storage 정책이 공개 접근이 아닌 권한 기반으로 되어 있는가?
+- 학생 계정으로 스케치 이미지를 제출했을 때 `submission_images` row가 생성되는가?
+- 학생 포트폴리오 상세에서 제출 이미지가 signed URL로 표시되는가?
 
 ## Vercel 환경 변수
 
@@ -74,6 +77,7 @@ OPENAI_TEXT_MODEL=gpt-4.1-mini
 - 비활성 계정 접근이 차단되는가?
 - OpenAI API 오류가 발생하지 않는가?
 - 이미지 업로드가 Storage에 저장되는가?
+- 제출 이미지 연결 정보가 `submission_images`에 저장되는가?
 - 리포트 저장이 `report_drafts`에 반영되는가?
 - 운영 옵션 저장이 `config_options`에 반영되는가?
 - 관리자 Settings에서 저장 후 실패 메시지가 뜨지 않는가?
