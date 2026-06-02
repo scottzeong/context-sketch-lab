@@ -49,7 +49,7 @@ function mapSession(row: SessionRow): StoredSessionRecord {
     id: row.id,
     title: row.title,
     textId: row.text_id || "",
-    textTitle: row.texts?.title || "Untitled text",
+    textTitle: row.texts?.title || "제목 없는 글",
     createdBy: row.created_by || undefined,
     groupId: row.learning_group_id || undefined,
     learningGoal: row.learning_goal || "",

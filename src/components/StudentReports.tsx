@@ -103,7 +103,7 @@ function buildReportDraft(group: StudentReportGroup, periodLabel: string) {
     "1. 최근 학습 요약",
     parentSummaries.length
       ? parentSummaries.map((summary) => `- ${summary}`).join("\n")
-      : "- 아직 보호자용 요약이 충분히 누적되지 않았습니다.",
+      : "- 아직 보호자용 요약이 충분히 축적되지 않았습니다.",
     "",
     "2. 관찰된 강점",
     strengths.length
@@ -129,7 +129,6 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
   const [studentFilter, setStudentFilter] = useState("all");
   const [groupFilter, setGroupFilter] = useState("all");
   const [sessionFilter, setSessionFilter] = useState("all");
-  const [tutorFilter, setTutorFilter] = useState("all");
   const [textFilter, setTextFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -176,13 +175,7 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
       ),
     [entries]
   );
-  const tutorOptions = useMemo(
-    () =>
-      Array.from(new Set(sessions.map((session) => session.createdBy).filter(Boolean))).sort(
-        (a, b) => String(a).localeCompare(String(b))
-      ) as string[],
-    [sessions]
-  );
+
   const textOptions = useMemo(() => {
     const byId = new Map<string, string>();
     sessions.forEach((session) => {
@@ -208,18 +201,9 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
       const studentMatch =
         studentFilter === "all" || entry.submission.studentName === studentFilter;
       const sessionMatch = sessionFilter === "all" || entry.submission.sessionId === sessionFilter;
-      const tutorMatch = tutorFilter === "all" || session?.createdBy === tutorFilter;
       const textMatch = textFilter === "all" || session?.textId === textFilter;
 
-      return (
-        afterStart &&
-        beforeEnd &&
-        groupMatch &&
-        studentMatch &&
-        sessionMatch &&
-        tutorMatch &&
-        textMatch
-      );
+      return afterStart && beforeEnd && groupMatch && studentMatch && sessionMatch && textMatch;
     });
   }, [
     endDate,
@@ -229,8 +213,7 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
     sessionFilter,
     startDate,
     studentFilter,
-    textFilter,
-    tutorFilter
+    textFilter
   ]);
 
   const groupsByStudent = useMemo(() => {
@@ -413,24 +396,6 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
             </select>
           </div>
           <div className="field">
-            <label htmlFor="report-tutor-filter">튜터</label>
-            <select
-              id="report-tutor-filter"
-              onChange={(event) => {
-                setTutorFilter(event.target.value);
-                resetSelected();
-              }}
-              value={tutorFilter}
-            >
-              <option value="all">전체</option>
-              {tutorOptions.map((tutorId) => (
-                <option key={tutorId} value={tutorId}>
-                  {tutorId}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="field">
             <label htmlFor="report-text-filter">생성된 문장</label>
             <select
               id="report-text-filter"
@@ -546,7 +511,7 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
               <div>
                 <p className="section-kicker">Student Report v1</p>
                 <h2>{selectedGroup.studentName} 학습 리포트</h2>
-                {savedDraft ? <p>마지막 저장 {formatDate(savedDraft.updatedAt)}</p> : null}
+                {savedDraft ? <p>마지막 저장: {formatDate(savedDraft.updatedAt)}</p> : null}
               </div>
               <div className="row-actions print-hidden">
                 <button className="secondary-button" onClick={copyReport} type="button">

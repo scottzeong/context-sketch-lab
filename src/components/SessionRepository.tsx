@@ -36,7 +36,6 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [tutorFilter, setTutorFilter] = useState("all");
   const [message, setMessage] = useState<string | null>(null);
   const [isDuplicating, setIsDuplicating] = useState(false);
 
@@ -62,14 +61,6 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
     return () => window.removeEventListener("session-repository-change", refresh);
   }, []);
 
-  const tutorOptions = useMemo(
-    () =>
-      Array.from(new Set(sessions.map((session) => session.createdBy).filter(Boolean))).sort(
-        (a, b) => String(a).localeCompare(String(b))
-      ) as string[],
-    [sessions]
-  );
-
   const filteredSessions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
@@ -79,7 +70,6 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
         (groupFilter === "ungrouped" && !session.groupId) ||
         session.groupId === groupFilter;
       const matchesStatus = statusFilter === "all" || session.status === statusFilter;
-      const matchesTutor = tutorFilter === "all" || session.createdBy === tutorFilter;
       const matchesQuery =
         !normalized ||
         [
@@ -88,21 +78,20 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
           session.groupName,
           session.learningGoal,
           session.worksheetTemplate,
-          session.createdBy,
           statusLabels[session.status]
         ]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(normalized));
 
-      return matchesGroup && matchesStatus && matchesTutor && matchesQuery;
+      return matchesGroup && matchesStatus && matchesQuery;
     });
-  }, [groupFilter, query, sessions, statusFilter, tutorFilter]);
+  }, [groupFilter, query, sessions, statusFilter]);
 
   const selectedSession =
     sessions.find((item) => item.id === selectedId) || filteredSessions[0] || null;
 
   async function setStatus(status: StoredSessionRecord["status"]) {
-    if (!selectedSession || readOnly) {
+    if (!selectedSession || readOnly || selectedSession.status === status) {
       return;
     }
 
@@ -134,8 +123,18 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
       return;
     }
 
+    const confirmed = window.confirm("이 세션을 삭제할까요? 삭제 후에는 되돌릴 수 없습니다.");
+
+    if (!confirmed) {
+      return;
+    }
+
     await deleteStoredSession(selectedSession.id);
     await refresh();
+  }
+
+  function statusButtonClass(status: StoredSessionRecord["status"]) {
+    return selectedSession?.status === status ? undefined : "secondary-button";
   }
 
   return (
@@ -191,21 +190,6 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
               <option value="closed">종료</option>
             </select>
           </div>
-          <div className="field">
-            <label htmlFor="session-tutor-filter">튜터</label>
-            <select
-              id="session-tutor-filter"
-              onChange={(event) => setTutorFilter(event.target.value)}
-              value={tutorFilter}
-            >
-              <option value="all">전체</option>
-              {tutorOptions.map((tutorId) => (
-                <option key={tutorId} value={tutorId}>
-                  {tutorId}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <div className="text-list">
@@ -232,7 +216,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
           ) : (
             <div className="empty-inline">
               <strong>조건에 맞는 세션이 없습니다.</strong>
-              <p>검색어, Class, 상태, 튜터 필터를 조정해 보세요.</p>
+              <p>검색어, Class, 상태 필터를 조정해 보세요.</p>
             </div>
           )}
         </div>
@@ -257,14 +241,28 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
                     <Copy aria-hidden="true" size={17} />
                     {isDuplicating ? "복제 중" : "복제"}
                   </button>
-                  <button className="secondary-button" onClick={() => setStatus("draft")}>
+                  <button
+                    className={statusButtonClass("draft")}
+                    onClick={() => setStatus("draft")}
+                    type="button"
+                  >
                     초안
                   </button>
-                  <button onClick={() => setStatus("published")}>공개</button>
-                  <button className="secondary-button" onClick={() => setStatus("closed")}>
+                  <button
+                    className={statusButtonClass("published")}
+                    onClick={() => setStatus("published")}
+                    type="button"
+                  >
+                    공개
+                  </button>
+                  <button
+                    className={statusButtonClass("closed")}
+                    onClick={() => setStatus("closed")}
+                    type="button"
+                  >
                     종료
                   </button>
-                  <button className="danger-button" onClick={removeSelected}>
+                  <button className="danger-button" onClick={removeSelected} type="button">
                     <Trash2 aria-hidden="true" size={17} />
                     삭제
                   </button>
@@ -275,7 +273,6 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
             <div className="metadata-grid">
               <span>글: {selectedSession.textTitle}</span>
               <span>Class: {selectedSession.groupName || "전체 학생"}</span>
-              <span>튜터: {selectedSession.createdBy || "미지정"}</span>
               <span>활동지: {selectedSession.worksheetTemplate}</span>
               <span>
                 <CalendarDays aria-hidden="true" size={14} />
@@ -299,7 +296,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
               </div>
               <div>
                 <strong>관리자 보기</strong>
-                <p>관리자는 세션을 참조하고 튜터별로 운영 흐름을 확인합니다.</p>
+                <p>관리자는 세션을 참조하고 운영 흐름을 확인합니다.</p>
               </div>
             </div>
           </>

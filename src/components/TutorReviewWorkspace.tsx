@@ -184,7 +184,7 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
       await updateStoredSubmissionStatus(submission.id, "under_review");
       setReview(saved);
       setFeedbackDraft(nextFeedback);
-      setMessage("AI 피드백 초안을 만들었습니다. 공개 전 튜터가 반드시 수정/확인해 주세요.");
+      setMessage("AI 피드백 초안을 만들었습니다. 공개 전 튜터가 반드시 수정하고 확인해 주세요.");
       await onReviewSaved?.();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "AI 초안 생성에 실패했습니다.");
@@ -205,7 +205,11 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
     }
 
     setBusyAction(status === "published" ? "publish" : "feedback-save");
-    setMessage(status === "published" ? "피드백을 공개하는 중입니다..." : "수정한 피드백을 저장하는 중입니다...");
+    setMessage(
+      status === "published"
+        ? "피드백을 공개하는 중입니다..."
+        : "최종 피드백을 저장하는 중입니다..."
+    );
 
     try {
       const saved = await saveStoredTutorReview({
@@ -219,7 +223,11 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
       }
 
       setReview(saved);
-      setMessage(status === "published" ? "튜터가 수정한 최종 피드백을 공개했습니다." : "수정한 피드백을 저장했습니다.");
+      setMessage(
+        status === "published"
+          ? "튜터가 수정한 최종 피드백을 공개했습니다."
+          : "최종 피드백을 저장했습니다. 이제 피드백 보기를 사용할 수 있습니다."
+      );
       await onReviewSaved?.();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "피드백 저장에 실패했습니다.");
@@ -229,6 +237,7 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
   }
 
   const rubricScores = getRubricScores(review?.evaluationJson);
+  const canViewFeedback = review?.status === "approved" || review?.status === "published";
 
   return (
     <div className="review-workspace enhanced-review-workspace">
@@ -324,7 +333,11 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
         <div className="grid-two">
           <div className="field">
             <label htmlFor="keyConnections">핵심 연결</label>
-            <textarea id="keyConnections" name="keyConnections" defaultValue={joinLines(review?.keyConnections) || submission.importantConnection} />
+            <textarea
+              id="keyConnections"
+              name="keyConnections"
+              defaultValue={joinLines(review?.keyConnections) || submission.importantConnection}
+            />
           </div>
           <div className="field">
             <label htmlFor="strengths">강점</label>
@@ -332,7 +345,11 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
           </div>
           <div className="field">
             <label htmlFor="misconceptions">오해/보완점</label>
-            <textarea id="misconceptions" name="misconceptions" defaultValue={joinLines(review?.misconceptions)} />
+            <textarea
+              id="misconceptions"
+              name="misconceptions"
+              defaultValue={joinLines(review?.misconceptions)}
+            />
           </div>
           <div className="field">
             <label htmlFor="nextStep">다음 과제</label>
@@ -357,15 +374,15 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
               type="button"
             >
               <Save aria-hidden="true" size={17} />
-              수정 저장
+              최종 저장
             </button>
             <button
-              disabled={busyAction === "publish" || !review}
+              disabled={busyAction === "publish" || !canViewFeedback}
               onClick={() => void saveEditedFeedback("published")}
               type="button"
             >
               <ClipboardCheck aria-hidden="true" size={17} />
-              {busyAction === "publish" ? "공개 중" : "최종 공개"}
+              {busyAction === "publish" ? "공개 중" : "피드백 보기"}
             </button>
           </div>
         </div>
@@ -378,7 +395,9 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
                 <textarea
                   id="studentFacingFeedback"
                   value={feedbackDraft.studentFacing}
-                  onChange={(event) => setFeedbackDraft((current) => ({ ...current, studentFacing: event.target.value }))}
+                  onChange={(event) =>
+                    setFeedbackDraft((current) => ({ ...current, studentFacing: event.target.value }))
+                  }
                 />
               </div>
               <div className="field">
@@ -386,7 +405,9 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
                 <textarea
                   id="tutorNotesFeedback"
                   value={feedbackDraft.tutorNotes}
-                  onChange={(event) => setFeedbackDraft((current) => ({ ...current, tutorNotes: event.target.value }))}
+                  onChange={(event) =>
+                    setFeedbackDraft((current) => ({ ...current, tutorNotes: event.target.value }))
+                  }
                 />
               </div>
               <div className="field">
@@ -394,7 +415,9 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
                 <textarea
                   id="parentSummaryFeedback"
                   value={feedbackDraft.parentSummary}
-                  onChange={(event) => setFeedbackDraft((current) => ({ ...current, parentSummary: event.target.value }))}
+                  onChange={(event) =>
+                    setFeedbackDraft((current) => ({ ...current, parentSummary: event.target.value }))
+                  }
                 />
               </div>
             </div>
@@ -415,7 +438,7 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
           <div className="empty-inline">
             <Eye aria-hidden="true" size={24} />
             <strong>아직 피드백 초안이 없습니다.</strong>
-            <p>튜터 관찰을 입력한 뒤 AI 피드백 초안을 생성하세요. 이후 튜터가 수정해 최종 공개합니다.</p>
+            <p>튜터 관찰을 입력한 뒤 AI 피드백 초안을 생성하세요. 이후 튜터가 수정해 최종 저장합니다.</p>
           </div>
         )}
 
