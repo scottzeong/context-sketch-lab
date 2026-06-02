@@ -23,12 +23,14 @@
 008_account_status.sql
 009_security_hardening.sql
 010_report_drafts.sql
+011_config_options.sql
 ```
 
 ## SQL 실행 후 확인
 
 - `profiles.account_status` 컬럼이 있는가?
 - `report_drafts` 테이블이 있는가?
+- `config_options` 테이블이 있고 기본 드롭다운 메뉴가 생성되었는가?
 - RLS가 모든 주요 테이블에 활성화되어 있는가?
 - `submission-images` storage 정책이 인증 사용자 전체 공개가 아닌 권한 기반으로 되어 있는가?
 
@@ -55,8 +57,9 @@ OPENAI_TEXT_MODEL=gpt-4.1-mini
 1. GitHub `main` push 후 Vercel deployment가 시작되는지 확인합니다.
 2. Build가 성공했는지 확인합니다.
 3. Production domain이 `https://roterfaden.kr`로 연결되는지 확인합니다.
-4. `/login` 접속이 되는지 확인합니다.
-5. 로그인 후 role별 홈으로 이동하는지 확인합니다.
+4. `/` 프론트 페이지가 보이는지 확인합니다.
+5. `/login` 접속이 되는지 확인합니다.
+6. 로그인 후 role별 홈으로 이동하는지 확인합니다.
 
 ## 운영 중 자주 확인할 것
 
@@ -66,3 +69,4 @@ OPENAI_TEXT_MODEL=gpt-4.1-mini
 - OpenAI API 오류가 발생하지 않는가?
 - 이미지 업로드가 Storage에 저장되는가?
 - 리포트 저장이 `report_drafts`에 반영되는가?
+- 드롭다운 설정이 `config_options`에 반영되는가?

@@ -24,6 +24,7 @@ import {
   updateManagedProfileStatus,
   updateParentStudentLinkStatus
 } from "@/lib/profileRepository";
+import { AdminConfigOptions } from "@/components/AdminConfigOptions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type {
   AccountStatus,
@@ -720,6 +721,8 @@ export function AdminUsers() {
             )}
           </div>
         </section>
+
+        <AdminConfigOptions />
       </div>
     </div>
   );

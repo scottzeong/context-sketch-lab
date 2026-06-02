@@ -423,6 +423,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      config_options: {
+        Row: {
+          id: string;
+          organization_id: string;
+          category: "age_range" | "difficulty_level" | "target_length" | "text_structure";
+          label: string;
+          value: string;
+          sort_order: number;
+          is_active: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          category: "age_range" | "difficulty_level" | "target_length" | "text_structure";
+          label: string;
+          value: string;
+          sort_order?: number;
+          is_active?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          label?: string;
+          value?: string;
+          sort_order?: number;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

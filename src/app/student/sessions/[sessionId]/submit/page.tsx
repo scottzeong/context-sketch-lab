@@ -12,7 +12,7 @@ export default async function StudentSubmitPage({ params }: StudentSubmitPagePro
 
   return (
     <StudentShell
-      title="Submit Context Sketch"
+      title="스케치 제출"
       description="스케치 사진과 짧은 설명을 제출하면 튜터 검토 대기 상태로 저장됩니다."
     >
       <StudentSubmissionForm sessionId={sessionId} />

@@ -411,14 +411,6 @@ export function TutorReviewWorkspace({
           </p>
         </div>
 
-        <details className="raw-json-details review-json-details">
-          <summary>평가 JSON 원본 보기</summary>
-          <pre>
-            {review?.evaluationJson
-              ? JSON.stringify(review.evaluationJson, null, 2)
-              : "AI 피드백 초안을 생성하면 원본 JSON이 여기에 표시됩니다."}
-          </pre>
-        </details>
       </section>
     </div>
   );

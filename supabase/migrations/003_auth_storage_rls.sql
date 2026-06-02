@@ -25,7 +25,7 @@ begin
   if org_id is null then
     insert into public.organizations (name, slug)
     values (
-      coalesce(new.raw_user_meta_data->>'organization_name', 'Context Sketch Lab'),
+      coalesce(new.raw_user_meta_data->>'organization_name', 'Roter Faden'),
       'context-sketch-' || replace(new.id::text, '-', '')
     )
     returning id into org_id;

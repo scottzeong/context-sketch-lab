@@ -21,11 +21,11 @@ export const textStructureTypeSchema = z.enum([
 
 export const textGenerationInputSchema = z.object({
   topic: z.string().min(1),
-  ageRange: ageRangeSchema,
+  ageRange: z.string().min(1),
   difficultyLevel: z.string().min(1),
   targetLength: z.string().min(1),
   textType: z.string().min(1),
-  textStructure: textStructureTypeSchema,
+  textStructure: z.string().min(1),
   learningGoal: z.string().min(1),
   mustInclude: z.array(z.string()).default([]),
   avoid: z.array(z.string()).default([]),
@@ -35,9 +35,9 @@ export const textGenerationInputSchema = z.object({
 export const generatedTextSchema = z.object({
   title: z.string().min(1),
   body: z.string().min(1),
-  estimatedReadingLevel: ageRangeSchema,
+  estimatedReadingLevel: z.string().min(1),
   difficultyLevel: z.string().min(1),
-  structureType: textStructureTypeSchema,
+  structureType: z.string().min(1),
   tutorRevisionNotes: z.array(z.string()),
   safetyNotes: z.array(z.string())
 });
@@ -60,23 +60,9 @@ export const generatedTextJsonSchema = {
   properties: {
     title: { type: "string" },
     body: { type: "string" },
-    estimatedReadingLevel: {
-      type: "string",
-      enum: ["AGE_7_8", "AGE_9_10", "AGE_11_12", "AGE_13_15", "AGE_16_18", "ADULT"]
-    },
+    estimatedReadingLevel: { type: "string" },
     difficultyLevel: { type: "string" },
-    structureType: {
-      type: "string",
-      enum: [
-        "narrative",
-        "cause_effect",
-        "compare_contrast",
-        "problem_solution",
-        "claim_evidence",
-        "sequence",
-        "perspective_shift"
-      ]
-    },
+    structureType: { type: "string" },
     tutorRevisionNotes: { type: "array", items: { type: "string" } },
     safetyNotes: { type: "array", items: { type: "string" } }
   }

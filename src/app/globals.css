@@ -161,6 +161,7 @@ button:disabled {
   border-radius: 7px;
   color: #e5e9ec;
   display: flex;
+  font-size: 0.72rem;
   gap: 10px;
   padding: 10px;
 }
@@ -350,16 +351,17 @@ button:disabled {
 
 .student-nav a {
   align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
   display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 800;
   gap: 7px;
-  padding: 0.5rem 0.7rem;
+  padding: 0.62rem 0.35rem;
 }
 
 .student-nav a:hover {
-  background: var(--paper);
-  border-color: rgba(217, 43, 43, 0.35);
+  border-bottom-color: var(--accent);
   color: var(--accent-strong);
 }
 
@@ -983,7 +985,13 @@ button:disabled {
 .report-quick-filters {
   align-items: flex-end;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.report-quick-filters button {
+  flex: 1 1 104px;
+  min-width: 0;
 }
 
 .report-axis-grid {
@@ -2035,6 +2043,167 @@ p {
   min-height: 180px;
 }
 
+.segmented-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.manual-textarea {
+  min-height: 260px;
+}
+
+.admin-config-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.settings-tabs {
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.settings-tabs button {
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--muted);
+  min-height: 36px;
+  padding: 0.45rem 0.2rem;
+}
+
+.settings-tabs button.active,
+.settings-tabs button:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.admin-config-add-form,
+.config-option-row {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-config-add-form {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 100px auto;
+}
+
+.admin-config-add-form .field {
+  margin-bottom: 0;
+}
+
+.config-option-list {
+  display: grid;
+  gap: 8px;
+}
+
+.config-option-row {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 86px auto auto auto;
+  padding: 10px;
+}
+
+.config-option-row input {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+}
+
+.compact-check {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.84rem;
+  font-weight: 800;
+  gap: 6px;
+}
+
+.front-page {
+  align-items: center;
+  display: grid;
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.front-hero {
+  max-width: 820px;
+}
+
+.front-logo {
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid rgba(166, 28, 28, 0.14);
+  border-radius: 8px;
+  display: inline-flex;
+  height: 88px;
+  margin-bottom: 22px;
+  padding: 10px 14px;
+  width: 148px;
+}
+
+.front-logo img {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.front-hero h1 {
+  font-size: clamp(2.4rem, 7vw, 5.4rem);
+  line-height: 1.03;
+  max-width: 880px;
+}
+
+.front-hero p:not(.eyebrow) {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-top: 20px;
+  max-width: 650px;
+}
+
+.front-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.manual-page {
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 42px 22px;
+}
+
+.manual-hero {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.manual-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manual-list {
+  color: var(--muted);
+  display: grid;
+  gap: 9px;
+  line-height: 1.65;
+  margin: 0;
+  padding-left: 20px;
+}
+
 .session-builder-grid {
   align-items: start;
   display: grid;
@@ -2188,6 +2357,12 @@ pre {
 
   .parent-link-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-config-add-form,
+  .config-option-row,
+  .manual-grid {
+    grid-template-columns: 1fr;
   }
 
   .admin-create-user-form {
