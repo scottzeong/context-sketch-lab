@@ -1,5 +1,5 @@
-import { requireCurrentProfile } from "@/lib/supabase/currentUser";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { requireCurrentProfile } from "@/lib/supabase/currentUser";
 
 export type WorksheetTemplateType =
   | "basic"
@@ -13,6 +13,7 @@ export type StoredSessionRecord = {
   title: string;
   textId: string;
   textTitle: string;
+  createdBy?: string;
   groupId?: string;
   learningGoal: string;
   worksheetTemplate: WorksheetTemplateType;
@@ -28,6 +29,7 @@ type SessionRow = {
   title: string;
   text_id: string | null;
   texts?: { title: string | null } | null;
+  created_by: string | null;
   learning_group_id: string | null;
   learning_goal: string | null;
   worksheet_template: string | null;
@@ -48,6 +50,7 @@ function mapSession(row: SessionRow): StoredSessionRecord {
     title: row.title,
     textId: row.text_id || "",
     textTitle: row.texts?.title || "Untitled text",
+    createdBy: row.created_by || undefined,
     groupId: row.learning_group_id || undefined,
     learningGoal: row.learning_goal || "",
     worksheetTemplate: (row.worksheet_template || "basic") as WorksheetTemplateType,

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CalendarDays,
-  ClipboardCheck,
-  Copy,
-  Search,
-  Trash2
-} from "lucide-react";
+import { CalendarDays, ClipboardCheck, Copy, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getLearningGroups, LearningGroupRecord } from "@/lib/groupRepository";
@@ -42,6 +36,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [tutorFilter, setTutorFilter] = useState("all");
   const [message, setMessage] = useState<string | null>(null);
   const [isDuplicating, setIsDuplicating] = useState(false);
 
@@ -67,6 +62,14 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
     return () => window.removeEventListener("session-repository-change", refresh);
   }, []);
 
+  const tutorOptions = useMemo(
+    () =>
+      Array.from(new Set(sessions.map((session) => session.createdBy).filter(Boolean))).sort(
+        (a, b) => String(a).localeCompare(String(b))
+      ) as string[],
+    [sessions]
+  );
+
   const filteredSessions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
@@ -76,6 +79,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
         (groupFilter === "ungrouped" && !session.groupId) ||
         session.groupId === groupFilter;
       const matchesStatus = statusFilter === "all" || session.status === statusFilter;
+      const matchesTutor = tutorFilter === "all" || session.createdBy === tutorFilter;
       const matchesQuery =
         !normalized ||
         [
@@ -84,20 +88,21 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
           session.groupName,
           session.learningGoal,
           session.worksheetTemplate,
+          session.createdBy,
           statusLabels[session.status]
         ]
           .filter(Boolean)
-          .some((value) => value.toLowerCase().includes(normalized));
+          .some((value) => String(value).toLowerCase().includes(normalized));
 
-      return matchesGroup && matchesStatus && matchesQuery;
+      return matchesGroup && matchesStatus && matchesTutor && matchesQuery;
     });
-  }, [groupFilter, query, sessions, statusFilter]);
+  }, [groupFilter, query, sessions, statusFilter, tutorFilter]);
 
   const selectedSession =
     sessions.find((item) => item.id === selectedId) || filteredSessions[0] || null;
 
   async function setStatus(status: StoredSessionRecord["status"]) {
-    if (!selectedSession) {
+    if (!selectedSession || readOnly) {
       return;
     }
 
@@ -106,7 +111,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
   }
 
   async function duplicateSelected() {
-    if (!selectedSession) {
+    if (!selectedSession || readOnly) {
       return;
     }
 
@@ -116,7 +121,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
       const duplicated = await duplicateStoredSession(selectedSession);
       await refresh();
       setSelectedId(duplicated.id);
-      setMessage("세션을 초안 상태로 복제했습니다. 그룹과 일정을 수정한 뒤 공개하세요.");
+      setMessage("세션을 초안 상태로 복제했습니다. 그룹과 일정을 확인한 뒤 공개하세요.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "세션 복제에 실패했습니다.");
     } finally {
@@ -125,7 +130,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
   }
 
   async function removeSelected() {
-    if (!selectedSession) {
+    if (!selectedSession || readOnly) {
       return;
     }
 
@@ -186,6 +191,21 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
               <option value="closed">종료</option>
             </select>
           </div>
+          <div className="field">
+            <label htmlFor="session-tutor-filter">튜터</label>
+            <select
+              id="session-tutor-filter"
+              onChange={(event) => setTutorFilter(event.target.value)}
+              value={tutorFilter}
+            >
+              <option value="all">전체</option>
+              {tutorOptions.map((tutorId) => (
+                <option key={tutorId} value={tutorId}>
+                  {tutorId}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="text-list">
@@ -202,7 +222,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
                 <span>
                   <strong>{session.title}</strong>
                   <small>
-                    {session.groupName || "전체 학생"} · {statusLabels[session.status]} ·{" "}
+                    {session.groupName || "전체 학생"} | {statusLabels[session.status]} |{" "}
                     {formatDate(session.scheduledFor)}
                   </small>
                 </span>
@@ -212,7 +232,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
           ) : (
             <div className="empty-inline">
               <strong>조건에 맞는 세션이 없습니다.</strong>
-              <p>검색어, 그룹, 상태 필터를 조정해 보세요.</p>
+              <p>검색어, 그룹, 상태, 튜터 필터를 조정해 보세요.</p>
             </div>
           )}
         </div>
@@ -227,34 +247,35 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
                 <h2>{selectedSession.title}</h2>
               </div>
               {!readOnly ? (
-              <div className="row-actions">
-                <button
-                  className="secondary-button"
-                  disabled={isDuplicating}
-                  onClick={duplicateSelected}
-                  type="button"
-                >
-                  <Copy aria-hidden="true" size={17} />
-                  {isDuplicating ? "복제 중" : "복제"}
-                </button>
-                <button className="secondary-button" onClick={() => setStatus("draft")}>
-                  초안
-                </button>
-                <button onClick={() => setStatus("published")}>공개</button>
-                <button className="secondary-button" onClick={() => setStatus("closed")}>
-                  종료
-                </button>
-                <button className="danger-button" onClick={removeSelected}>
-                  <Trash2 aria-hidden="true" size={17} />
-                  삭제
-                </button>
-              </div>
+                <div className="row-actions">
+                  <button
+                    className="secondary-button"
+                    disabled={isDuplicating}
+                    onClick={duplicateSelected}
+                    type="button"
+                  >
+                    <Copy aria-hidden="true" size={17} />
+                    {isDuplicating ? "복제 중" : "복제"}
+                  </button>
+                  <button className="secondary-button" onClick={() => setStatus("draft")}>
+                    초안
+                  </button>
+                  <button onClick={() => setStatus("published")}>공개</button>
+                  <button className="secondary-button" onClick={() => setStatus("closed")}>
+                    종료
+                  </button>
+                  <button className="danger-button" onClick={removeSelected}>
+                    <Trash2 aria-hidden="true" size={17} />
+                    삭제
+                  </button>
+                </div>
               ) : null}
             </div>
 
             <div className="metadata-grid">
               <span>글: {selectedSession.textTitle}</span>
               <span>그룹: {selectedSession.groupName || "전체 학생"}</span>
+              <span>튜터: {selectedSession.createdBy || "미지정"}</span>
               <span>활동지: {selectedSession.worksheetTemplate}</span>
               <span>
                 <CalendarDays aria-hidden="true" size={14} />
@@ -270,25 +291,27 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
             <div className="next-grid">
               <div>
                 <strong>반복 수업</strong>
-                <p>복제 버튼으로 같은 글과 활동지를 새 초안 세션으로 다시 사용할 수 있습니다.</p>
+                <p>복제 버튼으로 같은 글과 활동지를 초안 세션으로 다시 사용할 수 있습니다.</p>
               </div>
               <div>
                 <strong>학생 화면</strong>
                 <p>공개 상태가 되면 배정 그룹의 학생에게 표시됩니다.</p>
               </div>
               <div>
-                <strong>그룹 배포</strong>
-                <p>그룹이 없는 세션은 전체 학생을 대상으로 표시됩니다.</p>
+                <strong>관리자 보기</strong>
+                <p>관리자는 세션을 참조하고 튜터별로 운영 흐름을 확인합니다.</p>
               </div>
             </div>
           </>
         ) : (
           <div className="empty-state">
             <strong>선택된 세션이 없습니다.</strong>
-            <p>새 세션을 만들면 이곳에서 상태와 그룹을 관리할 수 있습니다.</p>
-            <Link className="primary-link" href="/tutor/sessions/new">
-              세션 만들기
-            </Link>
+            <p>새 세션을 만들면 여기에서 상태와 그룹을 관리할 수 있습니다.</p>
+            {!readOnly ? (
+              <Link className="primary-link" href="/tutor/sessions/new">
+                세션 만들기
+              </Link>
+            ) : null}
           </div>
         )}
       </section>

@@ -18,6 +18,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
   const [students, setStudents] = useState<GroupStudentRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -61,8 +62,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
     groups.find((group) => group.id === selectedId) || filteredGroups[0] || null;
   const availableStudents = selectedGroup
     ? students.filter(
-        (student) =>
-          !selectedGroup.students.some((member) => member.id === student.id)
+        (student) => !selectedGroup.students.some((member) => member.id === student.id)
       )
     : students;
 
@@ -72,6 +72,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
       setMessage("관리자는 그룹을 참조만 할 수 있습니다.");
       return;
     }
+
     setIsSaving(true);
     setMessage(null);
 
@@ -93,33 +94,34 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
     }
   }
 
-  async function createNewGroup() {
+  function createNewGroup() {
     if (readOnly) {
       return;
     }
     setSelectedId(null);
+    setDeleteConfirm("");
     setMessage("새 그룹 정보를 입력한 뒤 저장하세요.");
   }
 
   async function removeGroup() {
-    if (readOnly) {
+    if (!selectedGroup) {
       return;
     }
-    if (!selectedGroup) {
+
+    if (readOnly && deleteConfirm.trim() !== "확인") {
+      setMessage("삭제하려면 입력칸에 '확인'을 정확히 입력하세요.");
       return;
     }
 
     await deleteLearningGroup(selectedGroup.id);
     setSelectedId(null);
+    setDeleteConfirm("");
     setMessage("그룹을 삭제했습니다.");
     await refresh();
   }
 
   async function addStudent(studentId: string) {
-    if (readOnly) {
-      return;
-    }
-    if (!selectedGroup || !studentId) {
+    if (readOnly || !selectedGroup || !studentId) {
       return;
     }
 
@@ -128,10 +130,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
   }
 
   async function removeStudent(studentId: string) {
-    if (readOnly) {
-      return;
-    }
-    if (!selectedGroup) {
+    if (readOnly || !selectedGroup) {
       return;
     }
 
@@ -147,10 +146,11 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
             <p className="section-kicker">Groups</p>
             <h2>수업 그룹</h2>
           </div>
-          <button className="secondary-button" onClick={createNewGroup} type="button">
-            <Plus aria-hidden="true" size={17} />
-            새 그룹
-          </button>
+          {!readOnly ? (
+            <button className="secondary-button" onClick={createNewGroup} type="button">
+              <Plus aria-hidden="true" size={17} />새 그룹
+            </button>
+          ) : null}
         </div>
 
         {message ? <p className="save-message">{message}</p> : null}
@@ -169,17 +169,18 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
           {filteredGroups.length ? (
             filteredGroups.map((group) => (
               <button
-                className={`text-list-item ${
-                  selectedGroup?.id === group.id ? "active" : ""
-                }`}
+                className={`text-list-item ${selectedGroup?.id === group.id ? "active" : ""}`}
                 key={group.id}
-                onClick={() => setSelectedId(group.id)}
+                onClick={() => {
+                  setSelectedId(group.id);
+                  setDeleteConfirm("");
+                }}
                 type="button"
               >
                 <span>
                   <strong>{group.name}</strong>
                   <small>
-                    {group.ageRange || "연령 미설정"} · 학생 {group.studentCount}명
+                    {group.ageRange || "연령 미설정"} | 학생 {group.studentCount}명
                   </small>
                 </span>
                 <Users aria-hidden="true" size={18} />
@@ -188,7 +189,11 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
           ) : (
             <div className="empty-inline">
               <strong>아직 그룹이 없습니다.</strong>
-              <p>새 그룹을 만들어 학생을 배정하세요.</p>
+              <p>
+                {readOnly
+                  ? "튜터가 생성한 그룹이 생기면 여기에 표시됩니다."
+                  : "새 그룹을 만들고 학생을 배정하세요."}
+              </p>
             </div>
           )}
         </div>
@@ -208,17 +213,38 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
                   삭제
                 </button>
               ) : null}
-              <button disabled={isSaving} type="submit">
-                <Save aria-hidden="true" size={17} />
-                {isSaving ? "저장 중" : "저장"}
-              </button>
+              {!readOnly ? (
+                <button disabled={isSaving} type="submit">
+                  <Save aria-hidden="true" size={17} />
+                  {isSaving ? "저장 중" : "저장"}
+                </button>
+              ) : null}
             </div>
           </div>
+
+          {readOnly && selectedGroup ? (
+            <div className="delete-confirm-row">
+              <div className="field">
+                <label htmlFor="group-delete-confirm">삭제 안전 확인</label>
+                <input
+                  id="group-delete-confirm"
+                  onChange={(event) => setDeleteConfirm(event.target.value)}
+                  placeholder="삭제하려면 확인을 입력하세요"
+                  value={deleteConfirm}
+                />
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid-two">
             <div className="field">
               <label htmlFor="name">그룹명</label>
-              <input id="name" name="name" defaultValue={selectedGroup?.name || ""} />
+              <input
+                id="name"
+                name="name"
+                defaultValue={selectedGroup?.name || ""}
+                readOnly={readOnly}
+              />
             </div>
             <div className="field">
               <label htmlFor="ageRange">연령대</label>
@@ -226,7 +252,8 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
                 id="ageRange"
                 name="ageRange"
                 defaultValue={selectedGroup?.ageRange || ""}
-                placeholder="예: AGE_9_10, 초등 3-4"
+                placeholder="예: 초등 3-4"
+                readOnly={readOnly}
               />
             </div>
           </div>
@@ -238,6 +265,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
               name="description"
               defaultValue={selectedGroup?.description || ""}
               placeholder="그룹의 수업 목표나 운영 메모를 적습니다."
+              readOnly={readOnly}
             />
           </div>
         </form>
@@ -247,28 +275,30 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
             <div className="panel-heading compact-heading">
               <div>
                 <p className="section-kicker">Members</p>
-                <h2>학생 배정</h2>
+                <h2>배정 학생</h2>
               </div>
             </div>
 
-            <div className="group-add-student">
-              <select
-                aria-label="추가할 학생"
-                defaultValue=""
-                onChange={(event) => {
-                  void addStudent(event.target.value);
-                  event.currentTarget.value = "";
-                }}
-              >
-                <option value="">학생 선택</option>
-                {availableStudents.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.displayName} ({student.email})
-                  </option>
-                ))}
-              </select>
-              <UserPlus aria-hidden="true" size={18} />
-            </div>
+            {!readOnly ? (
+              <div className="group-add-student">
+                <select
+                  aria-label="추가할 학생"
+                  defaultValue=""
+                  onChange={(event) => {
+                    void addStudent(event.target.value);
+                    event.currentTarget.value = "";
+                  }}
+                >
+                  <option value="">학생 선택</option>
+                  {availableStudents.map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.displayName} ({student.email})
+                    </option>
+                  ))}
+                </select>
+                <UserPlus aria-hidden="true" size={18} />
+              </div>
+            ) : null}
 
             <div className="group-member-list">
               {selectedGroup.students.length ? (
@@ -278,19 +308,25 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
                       <strong>{student.displayName}</strong>
                       <p>{student.email}</p>
                     </div>
-                    <button
-                      className="secondary-button"
-                      onClick={() => void removeStudent(student.id)}
-                      type="button"
-                    >
-                      제거
-                    </button>
+                    {!readOnly ? (
+                      <button
+                        className="secondary-button"
+                        onClick={() => void removeStudent(student.id)}
+                        type="button"
+                      >
+                        제거
+                      </button>
+                    ) : null}
                   </article>
                 ))
               ) : (
                 <div className="empty-inline">
                   <strong>아직 배정된 학생이 없습니다.</strong>
-                  <p>위 선택창에서 학생을 그룹에 추가하세요.</p>
+                  <p>
+                    {readOnly
+                      ? "튜터가 학생을 배정하면 목록에 표시됩니다."
+                      : "학생 선택창에서 학생을 그룹에 추가하세요."}
+                  </p>
                 </div>
               )}
             </div>

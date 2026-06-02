@@ -1904,6 +1904,49 @@ p {
   min-height: 240px;
 }
 
+.analysis-readable {
+  display: grid;
+  gap: 12px;
+}
+
+.analysis-readable article {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.analysis-readable h4 {
+  margin: 0;
+}
+
+.analysis-readable ol,
+.analysis-readable ul {
+  color: var(--ink);
+  display: grid;
+  gap: 7px;
+  line-height: 1.55;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.analysis-list {
+  display: grid;
+  gap: 8px;
+}
+
+.analysis-list p {
+  color: var(--ink);
+}
+
+.analysis-list strong {
+  color: var(--accent-strong);
+  display: inline-block;
+  margin-right: 8px;
+}
+
 .generated-result-panel {
   padding-bottom: 20px;
 }
@@ -2139,6 +2182,46 @@ p {
   border-radius: 6px;
   min-width: 0;
   padding: 0.6rem 0.7rem;
+}
+
+.prompt-config-row,
+.rubric-weight-row {
+  align-items: start;
+}
+
+.config-prompt-input {
+  grid-column: 2 / -1;
+  min-height: 96px;
+}
+
+.rubric-weight-grid {
+  display: grid;
+  gap: 10px;
+  grid-column: 2 / -1;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.rubric-weight-grid label {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+}
+
+.rubric-weight-grid span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.delete-confirm-row {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-line);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
 }
 
 .compact-check {
@@ -2400,6 +2483,11 @@ pre {
   .config-option-row,
   .manual-grid {
     grid-template-columns: 1fr;
+  }
+
+  .config-prompt-input,
+  .rubric-weight-grid {
+    grid-column: 1 / -1;
   }
 
   .admin-create-user-form {

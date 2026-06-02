@@ -427,11 +427,12 @@ export type Database = {
         Row: {
           id: string;
           organization_id: string;
-          category: "age_range" | "difficulty_level" | "target_length" | "text_structure" | "rubric_axis";
+          category: "age_range" | "difficulty_level" | "target_length" | "text_structure" | "rubric_axis" | "rubric_weight";
           label: string;
           value: string;
           sort_order: number;
           is_active: boolean;
+          prompt_text: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -439,11 +440,12 @@ export type Database = {
         Insert: {
           id?: string;
           organization_id: string;
-          category: "age_range" | "difficulty_level" | "target_length" | "text_structure" | "rubric_axis";
+          category: "age_range" | "difficulty_level" | "target_length" | "text_structure" | "rubric_axis" | "rubric_weight";
           label: string;
           value: string;
           sort_order?: number;
           is_active?: boolean;
+          prompt_text?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -453,6 +455,7 @@ export type Database = {
           value?: string;
           sort_order?: number;
           is_active?: boolean;
+          prompt_text?: string | null;
           updated_at?: string;
         };
         Relationships: [];

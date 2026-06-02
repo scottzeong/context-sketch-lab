@@ -10,6 +10,24 @@ const statusLabels: Record<StoredTextRecord["status"], string> = {
   archived: "보관"
 };
 
+type StructureAnalysisView = {
+  summary?: string;
+  structureType?: string;
+  coreStructure?: {
+    beginning?: string;
+    middle?: string;
+    end?: string;
+    keyIdea?: string;
+  };
+  logicalFlow?: string[];
+  keyRelations?: Array<{
+    type?: string;
+    description?: string;
+  }>;
+  tutorQuestions?: string[];
+  worksheetSuggestions?: string[];
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
     month: "short",
@@ -22,6 +40,91 @@ function formatDate(value: string) {
 function uniqueValues(texts: StoredTextRecord[], key: keyof StoredTextRecord) {
   return Array.from(new Set(texts.map((text) => String(text[key] || "")).filter(Boolean))).sort(
     (a, b) => a.localeCompare(b)
+  );
+}
+
+function renderAnalysis(analysisJson: unknown) {
+  if (!analysisJson || typeof analysisJson !== "object") {
+    return (
+      <div className="empty-inline">
+        <strong>아직 저장된 구조 분석이 없습니다.</strong>
+        <p>튜터 Workbench에서 구조 분석을 실행하고 저장하면 여기에 표시됩니다.</p>
+      </div>
+    );
+  }
+
+  const analysis = analysisJson as StructureAnalysisView;
+  const core = analysis.coreStructure || {};
+
+  return (
+    <div className="analysis-readable">
+      {analysis.summary ? (
+        <article>
+          <h4>요약</h4>
+          <p>{analysis.summary}</p>
+        </article>
+      ) : null}
+
+      <article>
+        <h4>핵심 구조</h4>
+        <div className="analysis-list">
+          {core.beginning ? <p><strong>도입</strong>{core.beginning}</p> : null}
+          {core.middle ? <p><strong>전개</strong>{core.middle}</p> : null}
+          {core.end ? <p><strong>마무리</strong>{core.end}</p> : null}
+          {core.keyIdea ? <p><strong>핵심 생각</strong>{core.keyIdea}</p> : null}
+          {!core.beginning && !core.middle && !core.end && !core.keyIdea ? (
+            <p>{analysis.structureType || "구조 분석 데이터가 간단한 형태로 저장되어 있습니다."}</p>
+          ) : null}
+        </div>
+      </article>
+
+      {analysis.logicalFlow?.length ? (
+        <article>
+          <h4>전개 흐름</h4>
+          <ol>
+            {analysis.logicalFlow.map((item, index) => (
+              <li key={`${item}-${index}`}>{item}</li>
+            ))}
+          </ol>
+        </article>
+      ) : null}
+
+      {analysis.keyRelations?.length ? (
+        <article>
+          <h4>핵심 관계</h4>
+          <div className="analysis-list">
+            {analysis.keyRelations.map((relation, index) => (
+              <p key={`${relation.type || "relation"}-${index}`}>
+                <strong>{relation.type || "관계"}</strong>
+                {relation.description || ""}
+              </p>
+            ))}
+          </div>
+        </article>
+      ) : null}
+
+      {analysis.tutorQuestions?.length ? (
+        <article>
+          <h4>질문 후보</h4>
+          <ul>
+            {analysis.tutorQuestions.map((question, index) => (
+              <li key={`${question}-${index}`}>{question}</li>
+            ))}
+          </ul>
+        </article>
+      ) : null}
+
+      {analysis.worksheetSuggestions?.length ? (
+        <article>
+          <h4>활동지 제안</h4>
+          <ul>
+            {analysis.worksheetSuggestions.map((suggestion, index) => (
+              <li key={`${suggestion}-${index}`}>{suggestion}</li>
+            ))}
+          </ul>
+        </article>
+      ) : null}
+    </div>
   );
 }
 
@@ -237,18 +340,14 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
             <article className="text-body-preview">{selectedText.body}</article>
 
             <div className="analysis-preview">
-              <h3>구조 분석 데이터</h3>
-              <pre>
-                {selectedText.analysisJson
-                  ? JSON.stringify(selectedText.analysisJson, null, 2)
-                  : "아직 저장된 구조 분석이 없습니다. Workbench에서 구조 분석 후 다시 저장하면 여기에 표시됩니다."}
-              </pre>
+              <h3>구조 분석</h3>
+              {renderAnalysis(selectedText.analysisJson)}
             </div>
           </>
         ) : (
           <div className="empty-state">
             <strong>선택된 글이 없습니다.</strong>
-            <p>저장된 글이 생기면 이곳에서 본문과 분석을 확인합니다.</p>
+            <p>저장된 글이 생기면 여기에서 본문과 분석을 확인합니다.</p>
           </div>
         )}
       </section>

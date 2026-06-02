@@ -2,9 +2,9 @@
 
 ## Supabase 프로젝트 확인
 
-- 프로젝트 이름과 URL이 현재 Production 앱과 맞는가?
+- 프로젝트 이름과 URL이 현재 Production 환경과 맞는가?
 - Auth가 활성화되어 있는가?
-- Table Editor에 핵심 테이블이 보이는가?
+- Table Editor에 주요 테이블이 보이는가?
 - Storage에 `submission-images` bucket이 있는가?
 - bucket이 private인가?
 
@@ -25,19 +25,24 @@
 010_report_drafts.sql
 011_config_options.sql
 012_rubric_config_options.sql
+013_admin_option_prompts_and_weights.sql
 ```
 
 ## SQL 실행 후 확인
 
 - `profiles.account_status` 컬럼이 있는가?
 - `report_drafts` 테이블이 있는가?
-- `config_options` 테이블이 있고 기본 드롭다운 메뉴가 생성되었는가?
+- `config_options` 테이블이 있는가?
+- `config_options.prompt_text` 컬럼이 있는가?
+- `config_options.category`가 `rubric_weight`를 허용하는가?
+- 글구조/루브릭 평가구조 프롬프트가 저장되는가?
+- 루브릭 가중치 항목이 저장되는가?
 - RLS가 모든 주요 테이블에 활성화되어 있는가?
-- `submission-images` storage 정책이 인증 사용자 전체 공개가 아닌 권한 기반으로 되어 있는가?
+- `submission-images` Storage 정책이 공개 접근이 아닌 권한 기반으로 되어 있는가?
 
 ## Vercel 환경 변수
 
-Production 환경에 아래 값이 있어야 합니다.
+Production 환경에는 아래 값이 있어야 합니다.
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL
@@ -65,9 +70,10 @@ OPENAI_TEXT_MODEL=gpt-4.1-mini
 ## 운영 중 자주 확인할 것
 
 - Supabase Auth 사용자와 `profiles` row가 일치하는가?
-- 신규 사용자에게 organization_id가 들어갔는가?
-- 비활성 계정이 접근 차단되는가?
+- 신규 사용자에게 `organization_id`가 들어가는가?
+- 비활성 계정 접근이 차단되는가?
 - OpenAI API 오류가 발생하지 않는가?
 - 이미지 업로드가 Storage에 저장되는가?
 - 리포트 저장이 `report_drafts`에 반영되는가?
-- 드롭다운 설정이 `config_options`에 반영되는가?
+- 운영 옵션 저장이 `config_options`에 반영되는가?
+- 관리자 Settings에서 저장 후 실패 메시지가 뜨지 않는가?

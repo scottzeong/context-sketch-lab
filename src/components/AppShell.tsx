@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   { href: "/tutor/sessions", label: "Sessions", icon: ClipboardCheck, roles: ["admin", "tutor"] },
   { href: "/tutor/submissions", label: "Submissions", icon: Inbox, roles: ["tutor"] },
   { href: "/tutor/reports", label: "Reports", icon: BarChart3, roles: ["admin", "tutor"] },
-  { href: "/admin/users", label: "Admin Users", icon: UserRoundCog, roles: ["admin"] },
+  { href: "/admin/users", label: "Settings", icon: UserRoundCog, roles: ["admin"] },
   { href: "/manual", label: "Manual", icon: LibraryBig, roles: ["admin", "tutor"] }
 ];
 
