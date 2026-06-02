@@ -1,6 +1,6 @@
-# Context Sketch Lab / SketchFlow
+# Roter Faden
 
-Context Sketch Lab is a tutor-led reading and thinking workflow for generating learning texts, analyzing their structure, guiding paper-based context sketch activities, and turning tutor observations into feedback, evaluation, portfolios, and reports.
+Roter Faden is a tutor-led reading and thinking workflow for generating learning texts, analyzing their structure, guiding paper-based context sketch activities, and turning tutor observations into feedback, evaluation, portfolios, and reports.
 
 ## v1 Direction
 
@@ -38,3 +38,4 @@ npm run dev
 ## Current Status
 
 The documentation has been revised for the new v1 scope. The existing local prototype still contains the earlier Phase 0 image-analysis spike and should be replaced next with the text generation, text structure analysis, and tutor feedback evaluation spike described in `/docs`.
+

@@ -9,7 +9,7 @@ import { openaiTextModel } from "@/lib/ai/openai";
 
 export const runtime = "nodejs";
 
-const SYSTEM_PROMPT = `You are the Text Generator Agent for Context Sketch Lab.
+const SYSTEM_PROMPT = `You are the Text Generator Agent for Roter Faden.
 
 Create a Korean learning text for tutor-led reading lessons.
 Write every human-readable field in Korean.
@@ -46,3 +46,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

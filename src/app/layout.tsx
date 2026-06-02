@@ -3,15 +3,15 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://roterfaden.kr"),
-  title: "Context Sketch Lab",
-  description: "SketchFlow reading, sketching, feedback, and portfolio workspace",
+  title: "Roter Faden",
+  description: "Roter Faden reading, sketching, feedback, and portfolio workspace",
   icons: {
     icon: "/brand/favicon.svg",
     apple: "/brand/icon-192.png"
   },
   openGraph: {
-    title: "Context Sketch Lab",
-    description: "SketchFlow reading, sketching, feedback, and portfolio workspace",
+    title: "Roter Faden",
+    description: "Roter Faden reading, sketching, feedback, and portfolio workspace",
     images: ["/brand/og-image.png"]
   }
 };
@@ -27,3 +27,4 @@ export default function RootLayout({
     </html>
   );
 }
+

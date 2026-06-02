@@ -33,7 +33,7 @@ export async function StudentShell({
             <Image src="/brand/logo-mark.svg" alt="" width={38} height={38} priority />
           </span>
           <span>
-            <strong>SketchFlow</strong>
+            <strong>Roter Faden</strong>
             <small>Student</small>
           </span>
         </Link>
@@ -78,3 +78,4 @@ export async function StudentShell({
     </div>
   );
 }
+

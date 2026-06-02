@@ -1,4 +1,4 @@
-# Context Sketch Lab 데모 시나리오
+# Roter Faden 데모 시나리오
 
 ## 목적
 
@@ -127,3 +127,4 @@ parent@example.com
 - Supabase Storage에 제출 이미지가 저장되었는가?
 - `report_drafts`에 리포트 초안이 저장되었는가?
 - role별 접근 제한이 유지되는가?
+

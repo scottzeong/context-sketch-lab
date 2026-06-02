@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import re
 from dataclasses import dataclass
@@ -263,7 +263,7 @@ def draw_footer(canvas, doc):
     canvas.saveState()
     canvas.setFont("Malgun", 8)
     canvas.setFillColor(colors.HexColor("#5a6b7c"))
-    canvas.drawString(doc.leftMargin, 12 * mm, "Context Sketch Lab / SketchFlow")
+    canvas.drawString(doc.leftMargin, 12 * mm, "Roter Faden")
     canvas.drawRightString(A4[0] - doc.rightMargin, 12 * mm, f"{doc.page}")
     canvas.restoreState()
 
@@ -278,12 +278,12 @@ def build_pdf(output: Path, manuals: list[Manual], combined: bool) -> None:
         topMargin=18 * mm,
         bottomMargin=20 * mm,
         title=output.stem,
-        author="Context Sketch Lab",
+        author="Roter Faden",
     )
     story = []
 
     if combined:
-        story.append(Paragraph("Context Sketch Lab 운영 매뉴얼", styles["Title"]))
+        story.append(Paragraph("Roter Faden 운영 매뉴얼", styles["Title"]))
         story.append(Paragraph("관리자, 튜터, 학생/보호자, 배포, QA, 데모 시나리오 통합본", styles["Body"]))
         story.append(HorizontalRule(170 * mm))
         story.append(Spacer(1, 8))
@@ -304,7 +304,7 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     register_fonts()
 
-    build_pdf(OUT / "context-sketch-lab-operations-manual.pdf", MANUALS, combined=True)
+    build_pdf(OUT / "roter-faden-operations-manual.pdf", MANUALS, combined=True)
     for manual in MANUALS:
         build_pdf(OUT / manual.output, [manual], combined=False)
 
@@ -313,4 +313,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 

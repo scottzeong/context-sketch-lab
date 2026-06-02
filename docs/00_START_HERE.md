@@ -1,8 +1,8 @@
-# Context Sketch Lab / SketchFlow v1 시작 문서
+# Roter Faden v1 시작 문서
 
 ## 1. 방향 전환 요약
 
-Context Sketch Lab은 더 이상 AI가 아이의 손그림을 직접 해석하는 시스템을 핵심으로 삼지 않는다.
+Roter Faden은 더 이상 AI가 아이의 손그림을 직접 해석하는 시스템을 핵심으로 삼지 않는다.
 
 새 v1의 중심은 다음과 같다.
 
@@ -89,3 +89,4 @@ AI가 아이 그림을 해석했는가?
 ```
 
 이다.
+

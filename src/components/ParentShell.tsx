@@ -25,7 +25,7 @@ export async function ParentShell({
             <Image src="/brand/logo-mark.svg" alt="" width={38} height={38} priority />
           </span>
           <span>
-            <strong>SketchFlow</strong>
+            <strong>Roter Faden</strong>
             <small>Parent</small>
           </span>
         </Link>
@@ -60,3 +60,4 @@ export async function ParentShell({
     </div>
   );
 }
+

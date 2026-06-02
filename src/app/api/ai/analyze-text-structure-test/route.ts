@@ -9,7 +9,7 @@ import {
 
 export const runtime = "nodejs";
 
-const SYSTEM_PROMPT = `You are the Text Structure Analyzer Agent for Context Sketch Lab.
+const SYSTEM_PROMPT = `You are the Text Structure Analyzer Agent for Roter Faden.
 
 Write every human-readable field in Korean.
 The summary, mainIdea, paragraph roles/summaries/details, relation explanations, inference points, vocabulary meanings, discussion questions, and worksheet suggestions must be Korean.
@@ -45,3 +45,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

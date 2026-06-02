@@ -1,7 +1,7 @@
 # README 템플릿
 
 ```md
-# Context Sketch Lab / SketchFlow
+# Roter Faden
 
 튜터가 글을 생성·분석하고, 학생의 종이 맥락스케치 활동을 기반으로 관찰, 평가, 피드백, 포트폴리오를 관리하는 튜터링 기반 사고 훈련 플랫폼입니다.
 
@@ -53,3 +53,4 @@ OPENAI_TEXT_MODEL=gpt-4.1-mini
 - Reports
 - Manual and release notes
 \`\`\`
+

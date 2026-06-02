@@ -9,7 +9,7 @@ import {
 
 export const runtime = "nodejs";
 
-const SYSTEM_PROMPT = `You are the Tutor Feedback Evaluation Agent for Context Sketch Lab.
+const SYSTEM_PROMPT = `You are the Tutor Feedback Evaluation Agent for Roter Faden.
 
 Write every human-readable field in Korean.
 All feedbackDraft fields, rubric rationales, and recommendedNextActivities must be Korean.
@@ -49,3 +49,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

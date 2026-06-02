@@ -12,7 +12,7 @@ export default function LoginPage() {
           <Image src="/brand/logo-horizontal.svg" alt="Roterfaden" width={104} height={54} priority />
         </div>
         <div>
-          <p className="eyebrow">SketchFlow Access</p>
+          <p className="eyebrow">Roter Faden Access</p>
           <h1>로그인</h1>
           <p>
             Supabase Auth로 로그인하면 역할에 따라 튜터, 학생, 보호자, 관리자 작업
@@ -35,3 +35,4 @@ export default function LoginPage() {
     </main>
   );
 }
+

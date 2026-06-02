@@ -5,7 +5,6 @@ import {
   FileText,
   LayoutDashboard,
   LibraryBig,
-  GraduationCap,
   Settings,
   Sparkles,
   Users,
@@ -15,18 +14,40 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { UserAccountSummary } from "@/components/UserAccountSummary";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { UserRole } from "@/lib/supabase/database.types";
 
-const navItems = [
-  { href: "/tutor/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tutor/workbench", label: "AI Workbench", icon: Sparkles },
-  { href: "/tutor/groups", label: "Groups", icon: Users },
-  { href: "/tutor/texts", label: "Texts", icon: BookOpenText },
-  { href: "/tutor/sessions", label: "Sessions", icon: ClipboardCheck },
-  { href: "/tutor/reports", label: "Reports", icon: BarChart3 },
-  { href: "/admin/users", label: "Admin Users", icon: UserRoundCog },
-  { href: "/student/dashboard", label: "Student View", icon: GraduationCap },
-  { href: "/manual", label: "Manual", icon: LibraryBig }
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles: UserRole[];
+};
+
+const navItems: NavItem[] = [
+  { href: "/tutor/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "tutor"] },
+  { href: "/tutor/workbench", label: "AI Workbench", icon: Sparkles, roles: ["admin", "tutor"] },
+  { href: "/tutor/groups", label: "Groups", icon: Users, roles: ["admin", "tutor"] },
+  { href: "/tutor/texts", label: "Texts", icon: BookOpenText, roles: ["admin", "tutor"] },
+  { href: "/tutor/sessions", label: "Sessions", icon: ClipboardCheck, roles: ["admin", "tutor"] },
+  { href: "/tutor/reports", label: "Reports", icon: BarChart3, roles: ["admin", "tutor"] },
+  { href: "/admin/users", label: "Admin Users", icon: UserRoundCog, roles: ["admin"] },
+  { href: "/manual", label: "Manual", icon: LibraryBig, roles: ["admin", "tutor"] }
 ];
+
+const workspaceLabel: Record<UserRole, string> = {
+  admin: "Admin Workspace",
+  tutor: "Tutor Workspace",
+  student: "Student Workspace",
+  parent: "Parent Workspace"
+};
+
+const workspaceHome: Record<UserRole, string> = {
+  admin: "/tutor/dashboard",
+  tutor: "/tutor/dashboard",
+  student: "/student/dashboard",
+  parent: "/parent/dashboard"
+};
 
 type AppShellProps = {
   children: ReactNode;
@@ -39,25 +60,35 @@ type AppShellProps = {
 export async function AppShell({
   children,
   title,
-  eyebrow = "Context Sketch Lab",
+  eyebrow = "Roter Faden",
   description,
   action
 }: AppShellProps) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+  const role = profile?.role || "student";
+  const visibleNavItems = navItems.filter((item) => item.roles.includes(role));
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <Link className="brand" href="/tutor/dashboard">
+        <Link className="brand" href={workspaceHome[role]}>
           <span className="brand-mark">
             <Image src="/brand/logo-mark.svg" alt="" width={38} height={38} priority />
           </span>
           <span>
-            <strong>SketchFlow</strong>
-            <small>Tutor Workspace</small>
+            <strong>Roter Faden</strong>
+            <small>{workspaceLabel[role]}</small>
           </span>
         </Link>
 
         <nav className="nav-list" aria-label="Primary navigation">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
 
             return (
@@ -96,3 +127,4 @@ export async function AppShell({
     </div>
   );
 }
+
