@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ClipboardCheck, LibraryBig } from "lucide-react";
+import { ArrowRight, ClipboardCheck, LibraryBig, Search } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getLearningGroups, LearningGroupRecord } from "@/lib/groupRepository";
@@ -31,6 +31,7 @@ export function SessionBuilder() {
   const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
   const [selectedTextId, setSelectedTextId] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState("");
+  const [textQuery, setTextQuery] = useState("");
   const [worksheetTemplate, setWorksheetTemplate] =
     useState<WorksheetTemplateType>("basic");
   const [message, setMessage] = useState<string | null>(null);
@@ -57,14 +58,33 @@ export function SessionBuilder() {
     void loadData();
   }, []);
 
+  const filteredTexts = useMemo(() => {
+    const normalized = textQuery.trim().toLowerCase();
+    if (!normalized) {
+      return texts;
+    }
+
+    return texts.filter((text) =>
+      [text.title, text.body, text.learningGoal, text.structureType, text.difficultyLevel]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(normalized))
+    );
+  }, [textQuery, texts]);
+
   const selectedText = useMemo(
-    () => texts.find((item) => item.id === selectedTextId) || null,
-    [selectedTextId, texts]
+    () => texts.find((item) => item.id === selectedTextId) || filteredTexts[0] || null,
+    [filteredTexts, selectedTextId, texts]
   );
   const selectedGroup = useMemo(
     () => groups.find((group) => group.id === selectedGroupId) || null,
     [groups, selectedGroupId]
   );
+
+  useEffect(() => {
+    if (!texts.some((text) => text.id === selectedTextId) && filteredTexts[0]) {
+      setSelectedTextId(filteredTexts[0].id);
+    }
+  }, [filteredTexts, selectedTextId, texts]);
 
   function onTextChange(textId: string) {
     const nextText = texts.find((item) => item.id === textId);
@@ -103,7 +123,7 @@ export function SessionBuilder() {
       });
 
       setSavedSessionId(session.id);
-      setMessage("세션을 저장했습니다. Sessions 화면에서 상태를 관리할 수 있습니다.");
+      setMessage("세션을 저장했습니다. 세션 목록에서 상태와 그룹을 관리할 수 있습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "세션 저장에 실패했습니다.");
     } finally {
@@ -139,6 +159,16 @@ export function SessionBuilder() {
           </button>
         </div>
 
+        <label className="search-box" htmlFor="session-text-search">
+          <Search aria-hidden="true" size={17} />
+          <input
+            id="session-text-search"
+            onChange={(event) => setTextQuery(event.target.value)}
+            placeholder="사용할 글 제목, 목표, 구조 검색"
+            value={textQuery}
+          />
+        </label>
+
         <div className="field">
           <label htmlFor="textId">사용할 글</label>
           <select
@@ -147,9 +177,9 @@ export function SessionBuilder() {
             onChange={(event) => onTextChange(event.target.value)}
             value={selectedTextId}
           >
-            {texts.map((text) => (
+            {filteredTexts.map((text) => (
               <option key={text.id} value={text.id}>
-                {text.title}
+                {text.title} · {text.structureType || "구조 미지정"}
               </option>
             ))}
           </select>
@@ -225,8 +255,8 @@ export function SessionBuilder() {
           <div className="field">
             <label htmlFor="status">상태</label>
             <select id="status" name="status" defaultValue="draft">
-              <option value="draft">draft</option>
-              <option value="published">published</option>
+              <option value="draft">초안</option>
+              <option value="published">공개</option>
             </select>
           </div>
           <div className="field">
@@ -237,8 +267,7 @@ export function SessionBuilder() {
 
         {message ? (
           <p className="save-message">
-            {message}{" "}
-            {savedSessionId ? <Link href="/tutor/sessions">목록 보기</Link> : null}
+            {message} {savedSessionId ? <Link href="/tutor/sessions">목록 보기</Link> : null}
           </p>
         ) : null}
       </form>
@@ -251,9 +280,9 @@ export function SessionBuilder() {
           </div>
         </div>
         <div className="metadata-grid compact">
-          <span>{selectedText?.ageRange}</span>
-          <span>{selectedText?.difficultyLevel}</span>
-          <span>{selectedText?.structureType}</span>
+          <span>{selectedText?.ageRange || "연령 미지정"}</span>
+          <span>{selectedText?.difficultyLevel || "난이도 미지정"}</span>
+          <span>{selectedText?.structureType || "구조 미지정"}</span>
           <span>{selectedGroup?.name || "전체 학생"}</span>
         </div>
         <article className="text-body-preview">{selectedText?.body}</article>

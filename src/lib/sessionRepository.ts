@@ -147,6 +147,28 @@ export async function updateStoredSessionStatus(
   return mapSession(data as unknown as SessionRow);
 }
 
+export async function duplicateStoredSession(
+  source: StoredSessionRecord,
+  overrides?: {
+    title?: string;
+    groupId?: string;
+    groupName?: string;
+    scheduledFor?: string;
+  }
+) {
+  return saveStoredSession({
+    title: overrides?.title || `${source.title} 복사본`,
+    textId: source.textId,
+    textTitle: source.textTitle,
+    groupId: overrides?.groupId ?? source.groupId,
+    learningGoal: source.learningGoal,
+    worksheetTemplate: source.worksheetTemplate,
+    groupName: overrides?.groupName ?? source.groupName,
+    status: "draft",
+    scheduledFor: overrides?.scheduledFor || ""
+  });
+}
+
 export async function deleteStoredSession(id: string) {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.from("learning_sessions").delete().eq("id", id);
