@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock3,
   MessageSquareText,
+  Printer,
   Users
 } from "lucide-react";
 import Link from "next/link";
@@ -83,10 +84,14 @@ export function ParentDashboard() {
   const latestEntry = filteredEntries[0];
   const latestDate = latestEntry ? formatDate(latestEntry.submission.updatedAt) : "-";
   const studentCountLabel = selectedStudent ? selectedStudent.displayName : "전체 학생";
+  const parentSummaryText = filteredEntries
+    .slice(0, 4)
+    .map((entry) => `- ${entry.submission.sessionTitle}: ${getParentSummary(entry)}`)
+    .join("\n");
 
   return (
     <div className="parent-dashboard-layout">
-      <section className="panel parent-overview-panel">
+      <section className="panel parent-overview-panel print-hidden">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">Family View</p>
@@ -169,13 +174,21 @@ export function ParentDashboard() {
         </div>
       </section>
 
-      <section className="panel parent-feedback-panel">
+      <section className="panel parent-feedback-panel parent-report-print">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">Published Feedback</p>
             <h2>공개 피드백과 성장 기록</h2>
           </div>
-          <span className="status">{isLoading ? "불러오는 중" : `${filteredEntries.length}개`}</span>
+          <div className="row-actions print-hidden">
+            <span className="status">
+              {isLoading ? "불러오는 중" : `${filteredEntries.length}개`}
+            </span>
+            <button onClick={() => window.print()} type="button">
+              <Printer aria-hidden="true" size={17} />
+              요약 인쇄
+            </button>
+          </div>
         </div>
 
         {latestEntry ? (
@@ -188,7 +201,7 @@ export function ParentDashboard() {
               <h3>{latestEntry.submission.sessionTitle}</h3>
               <p>{getParentSummary(latestEntry)}</p>
               <Link
-                className="primary-link"
+                className="primary-link print-hidden"
                 href={`/parent/submissions/${latestEntry.submission.id}/feedback`}
               >
                 자세히 보기
@@ -221,6 +234,15 @@ export function ParentDashboard() {
           </article>
         </div>
 
+        <div className="parent-summary-report">
+          <h3>보호자 요약 리포트</h3>
+          {parentSummaryText ? (
+            <p>{parentSummaryText}</p>
+          ) : (
+            <p>공개된 피드백이 쌓이면 이곳에 보호자용 요약이 표시됩니다.</p>
+          )}
+        </div>
+
         <div className="portfolio-list">
           {filteredEntries.length ? (
             filteredEntries.map((entry) => (
@@ -232,7 +254,7 @@ export function ParentDashboard() {
                   <small>{formatDate(entry.submission.updatedAt)} 업데이트</small>
                 </div>
                 <Link
-                  className="primary-link"
+                  className="primary-link print-hidden"
                   href={`/parent/submissions/${entry.submission.id}/feedback`}
                 >
                   보기

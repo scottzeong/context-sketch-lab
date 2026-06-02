@@ -385,6 +385,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      report_drafts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          student_id: string | null;
+          student_name: string;
+          title: string;
+          body: string;
+          period_start: string | null;
+          period_end: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          student_id?: string | null;
+          student_name: string;
+          title: string;
+          body: string;
+          period_start?: string | null;
+          period_end?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          student_id?: string | null;
+          student_name?: string;
+          title?: string;
+          body?: string;
+          period_start?: string | null;
+          period_end?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

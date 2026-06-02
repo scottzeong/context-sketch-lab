@@ -5,6 +5,7 @@ import {
   ClipboardCopy,
   FileText,
   Printer,
+  Save,
   Search,
   TrendingUp
 } from "lucide-react";
@@ -14,9 +15,11 @@ import {
   getPublishedPortfolioEntries,
   PortfolioEntry
 } from "@/lib/portfolioRepository";
+import { getReportDrafts, saveReportDraft, StoredReportDraft } from "@/lib/reportRepository";
 import { getStoredSessions, StoredSessionRecord } from "@/lib/sessionRepository";
 
 type StudentReportGroup = {
+  studentId?: string;
   studentName: string;
   entries: PortfolioEntry[];
 };
@@ -35,6 +38,10 @@ function formatDate(value: string) {
     month: "short",
     day: "numeric"
   }).format(new Date(value));
+}
+
+function toDateInput(value: Date) {
+  return value.toISOString().slice(0, 10);
 }
 
 function getRubricScores(entry: PortfolioEntry) {
@@ -75,7 +82,7 @@ function getAxisAverages(entries: PortfolioEntry[]) {
   }));
 }
 
-function buildReportDraft(group: StudentReportGroup) {
+function buildReportDraft(group: StudentReportGroup, periodLabel: string) {
   const averageScore = getAverageScore(group.entries);
   const latest = group.entries[0];
   const strengths = group.entries.flatMap((entry) => entry.review.strengths).slice(0, 5);
@@ -86,19 +93,20 @@ function buildReportDraft(group: StudentReportGroup) {
   const parentSummaries = group.entries
     .map((entry) => entry.review.feedbackDraft?.parentSummary)
     .filter(Boolean)
-    .slice(0, 3);
+    .slice(0, 4);
 
   return [
     `[${group.studentName} 학습 리포트]`,
     "",
-    `총 공개 기록: ${group.entries.length}개`,
+    `기간: ${periodLabel}`,
+    `공개 피드백 기록: ${group.entries.length}개`,
     `평균 루브릭 점수: ${averageScore ? averageScore.toFixed(1) : "-"}`,
     latest ? `최근 활동: ${latest.submission.sessionTitle}` : "",
     "",
     "1. 최근 학습 요약",
     parentSummaries.length
       ? parentSummaries.map((summary) => `- ${summary}`).join("\n")
-      : "- 아직 보호자 요약이 충분하지 않습니다.",
+      : "- 아직 보호자용 요약이 충분히 누적되지 않았습니다.",
     "",
     "2. 관찰된 강점",
     strengths.length
@@ -118,27 +126,41 @@ export function StudentReports() {
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
   const [sessions, setSessions] = useState<StoredSessionRecord[]>([]);
   const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
+  const [savedDrafts, setSavedDrafts] = useState<StoredReportDraft[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [reportBody, setReportBody] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function loadReports() {
+      setIsLoading(true);
       try {
-        const [nextEntries, nextSessions, nextGroups] = await Promise.all([
+        const [nextEntries, nextSessions, nextGroups, nextDrafts] = await Promise.all([
           getPublishedPortfolioEntries(),
           getStoredSessions(),
-          getLearningGroups()
+          getLearningGroups(),
+          getReportDrafts()
         ]);
         setEntries(nextEntries);
         setSessions(nextSessions);
         setGroups(nextGroups);
+        setSavedDrafts(nextDrafts);
         setSelectedStudent(
           (current) => current || nextEntries[0]?.submission.studentName || null
         );
+        setMessage(null);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "리포트를 불러오지 못했습니다.");
+        setMessage(
+          error instanceof Error ? error.message : "리포트를 불러오지 못했습니다."
+        );
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -150,30 +172,37 @@ export function StudentReports() {
     [sessions]
   );
 
-  const groupFilteredEntries = useMemo(() => {
-    if (groupFilter === "all") {
-      return entries;
-    }
-
+  const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
       const session = sessionById.get(entry.submission.sessionId);
-      return groupFilter === "ungrouped"
-        ? !session?.groupId
-        : session?.groupId === groupFilter;
+      const submittedAt = new Date(entry.submission.submittedAt);
+      const afterStart = startDate ? submittedAt >= new Date(startDate) : true;
+      const beforeEnd = endDate
+        ? submittedAt <= new Date(`${endDate}T23:59:59`)
+        : true;
+      const groupMatch =
+        groupFilter === "all"
+          ? true
+          : groupFilter === "ungrouped"
+            ? !session?.groupId
+            : session?.groupId === groupFilter;
+
+      return afterStart && beforeEnd && groupMatch;
     });
-  }, [entries, groupFilter, sessionById]);
+  }, [endDate, entries, groupFilter, sessionById, startDate]);
 
   const groupsByStudent = useMemo(() => {
     const grouped = new Map<string, PortfolioEntry[]>();
 
-    groupFilteredEntries.forEach((entry) => {
-      const studentName = entry.submission.studentName || "Student";
+    filteredEntries.forEach((entry) => {
+      const studentName = entry.submission.studentName || "학생";
       grouped.set(studentName, [...(grouped.get(studentName) || []), entry]);
     });
 
     return Array.from(grouped.entries())
       .map(([studentName, groupEntries]) => ({
         studentName,
+        studentId: groupEntries[0]?.submission.studentId,
         entries: groupEntries.sort(
           (a, b) =>
             new Date(b.submission.submittedAt).getTime() -
@@ -181,7 +210,7 @@ export function StudentReports() {
         )
       }))
       .sort((a, b) => a.studentName.localeCompare(b.studentName));
-  }, [groupFilteredEntries]);
+  }, [filteredEntries]);
 
   const filteredGroups = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -203,21 +232,78 @@ export function StudentReports() {
     filteredGroups[0] ||
     null;
 
-  const reportDraft = selectedGroup ? buildReportDraft(selectedGroup) : "";
+  const periodLabel =
+    startDate || endDate
+      ? `${startDate || "처음"} - ${endDate || "현재"}`
+      : "전체 기간";
+
+  const generatedDraft = selectedGroup ? buildReportDraft(selectedGroup, periodLabel) : "";
   const axisAverages = selectedGroup ? getAxisAverages(selectedGroup.entries) : [];
   const averageScore = selectedGroup ? getAverageScore(selectedGroup.entries) : null;
+  const savedDraft = selectedGroup
+    ? savedDrafts.find((draft) => draft.studentName === selectedGroup.studentName)
+    : null;
 
-  async function copyReport() {
-    if (!reportDraft) {
+  useEffect(() => {
+    if (!selectedGroup) {
+      setReportBody("");
       return;
     }
 
-    await navigator.clipboard.writeText(reportDraft);
+    const existing = savedDrafts.find(
+      (draft) => draft.studentName === selectedGroup.studentName
+    );
+    setReportBody(existing?.body || generatedDraft);
+  }, [generatedDraft, savedDrafts, selectedGroup]);
+
+  async function copyReport() {
+    if (!reportBody) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(reportBody);
     setMessage("리포트 초안을 클립보드에 복사했습니다.");
+  }
+
+  async function saveDraft() {
+    if (!selectedGroup || !reportBody.trim()) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      const saved = await saveReportDraft({
+        studentId: selectedGroup.studentId,
+        studentName: selectedGroup.studentName,
+        title: `${selectedGroup.studentName} 학습 리포트`,
+        body: reportBody,
+        periodStart: startDate,
+        periodEnd: endDate
+      });
+      setSavedDrafts((current) => [
+        saved,
+        ...current.filter((draft) => draft.id !== saved.id)
+      ]);
+      setMessage("리포트 초안을 저장했습니다.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "리포트 저장에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function printReport() {
     window.print();
+  }
+
+  function setLastDays(days: number) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    setStartDate(toDateInput(start));
+    setEndDate(toDateInput(end));
+    setSelectedStudent(null);
   }
 
   return (
@@ -228,7 +314,9 @@ export function StudentReports() {
             <p className="section-kicker">Reports</p>
             <h2>학생 리포트</h2>
           </div>
-          <span className="status done">{groupsByStudent.length} students</span>
+          <span className="status done">
+            {isLoading ? "불러오는 중" : `${groupsByStudent.length}명`}
+          </span>
         </div>
 
         {message ? <p className="save-message">{message}</p> : null}
@@ -243,24 +331,66 @@ export function StudentReports() {
           />
         </label>
 
-        <div className="field">
-          <label htmlFor="report-group-filter">그룹 필터</label>
-          <select
-            id="report-group-filter"
-            onChange={(event) => {
-              setGroupFilter(event.target.value);
-              setSelectedStudent(null);
-            }}
-            value={groupFilter}
-          >
-            <option value="all">전체</option>
-            <option value="ungrouped">전체 학생 세션</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+        <div className="grid-two compact-filter-grid">
+          <div className="field">
+            <label htmlFor="report-group-filter">그룹</label>
+            <select
+              id="report-group-filter"
+              onChange={(event) => {
+                setGroupFilter(event.target.value);
+                setSelectedStudent(null);
+              }}
+              value={groupFilter}
+            >
+              <option value="all">전체</option>
+              <option value="ungrouped">그룹 없는 세션</option>
+              {groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="report-start-date">시작일</label>
+            <input
+              id="report-start-date"
+              onChange={(event) => {
+                setStartDate(event.target.value);
+                setSelectedStudent(null);
+              }}
+              type="date"
+              value={startDate}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="report-end-date">종료일</label>
+            <input
+              id="report-end-date"
+              onChange={(event) => {
+                setEndDate(event.target.value);
+                setSelectedStudent(null);
+              }}
+              type="date"
+              value={endDate}
+            />
+          </div>
+          <div className="report-quick-filters">
+            <button className="secondary-button" onClick={() => setLastDays(30)} type="button">
+              최근 30일
+            </button>
+            <button
+              className="secondary-button"
+              onClick={() => {
+                setStartDate("");
+                setEndDate("");
+                setSelectedStudent(null);
+              }}
+              type="button"
+            >
+              전체 기간
+            </button>
+          </div>
         </div>
 
         <div className="text-list">
@@ -286,8 +416,8 @@ export function StudentReports() {
             ))
           ) : (
             <div className="empty-inline">
-              <strong>아직 리포트 데이터가 없습니다.</strong>
-              <p>피드백을 공개하면 학생별 리포트가 생성됩니다.</p>
+              <strong>조건에 맞는 리포트 데이터가 없습니다.</strong>
+              <p>기간이나 그룹 필터를 넓히거나 피드백 공개 여부를 확인해 주세요.</p>
             </div>
           )}
         </div>
@@ -300,11 +430,18 @@ export function StudentReports() {
               <div>
                 <p className="section-kicker">Student Report v1</p>
                 <h2>{selectedGroup.studentName} 학습 리포트</h2>
+                {savedDraft ? (
+                  <p>마지막 저장: {formatDate(savedDraft.updatedAt)}</p>
+                ) : null}
               </div>
               <div className="row-actions print-hidden">
                 <button className="secondary-button" onClick={copyReport} type="button">
                   <ClipboardCopy aria-hidden="true" size={17} />
                   초안 복사
+                </button>
+                <button className="secondary-button" disabled={isSaving} onClick={saveDraft} type="button">
+                  <Save aria-hidden="true" size={17} />
+                  {isSaving ? "저장 중" : "초안 저장"}
                 </button>
                 <button onClick={printReport} type="button">
                   <Printer aria-hidden="true" size={17} />
@@ -326,14 +463,18 @@ export function StudentReports() {
               </article>
               <article>
                 <BarChart3 aria-hidden="true" size={20} />
-                <span>최근 활동</span>
-                <strong>{selectedGroup.entries[0]?.submission.sessionTitle || "-"}</strong>
+                <span>기간</span>
+                <strong>{periodLabel}</strong>
               </article>
             </div>
 
             <div className="report-section">
               <h3>학부모 리포트 초안</h3>
-              <pre className="report-draft">{reportDraft}</pre>
+              <textarea
+                className="report-draft report-draft-editor"
+                onChange={(event) => setReportBody(event.target.value)}
+                value={reportBody}
+              />
             </div>
 
             <div className="report-section">
@@ -348,7 +489,10 @@ export function StudentReports() {
                   ))}
                 </div>
               ) : (
-                <p>아직 루브릭 점수 데이터가 없습니다.</p>
+                <div className="empty-inline">
+                  <strong>아직 루브릭 점수 데이터가 없습니다.</strong>
+                  <p>튜터 리뷰에서 평가 초안을 생성하면 축별 평균이 표시됩니다.</p>
+                </div>
               )}
             </div>
 
@@ -378,7 +522,7 @@ export function StudentReports() {
         ) : (
           <div className="empty-state">
             <strong>선택된 학생이 없습니다.</strong>
-            <p>피드백을 공개한 뒤 학생 리포트를 확인할 수 있습니다.</p>
+            <p>피드백을 공개하면 학생 리포트를 확인할 수 있습니다.</p>
           </div>
         )}
       </section>

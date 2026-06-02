@@ -924,6 +924,22 @@ button:disabled {
   min-height: 260px;
 }
 
+.report-draft-editor {
+  min-height: 360px;
+  resize: vertical;
+  width: 100%;
+}
+
+.compact-filter-grid {
+  margin-bottom: 12px;
+}
+
+.report-quick-filters {
+  align-items: end;
+  display: flex;
+  gap: 8px;
+}
+
 .report-axis-grid {
   display: grid;
   gap: 10px;
@@ -1071,6 +1087,21 @@ button:disabled {
   font-size: 1.2rem;
   grid-column: 1 / -1;
   overflow-wrap: anywhere;
+}
+
+.parent-summary-report {
+  background: #fafaf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 14px;
+}
+
+.parent-summary-report p {
+  color: #30343a;
+  white-space: pre-wrap;
 }
 
 .groups-list {
@@ -2168,6 +2199,7 @@ pre {
   .parent-growth-strip,
   .parent-link-form,
   .admin-create-user-form,
+  .compact-filter-grid,
   .review-status-flow,
   .review-rubric-grid,
   .rubric-strip,
@@ -2192,6 +2224,11 @@ pre {
   .queue-meta {
     align-items: start;
     justify-items: start;
+  }
+
+  .report-quick-filters {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 
@@ -2234,6 +2271,12 @@ pre {
     padding: 0;
   }
 
+  .parent-report-print {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
   .report-document-heading {
     display: block;
     margin-bottom: 18px;
@@ -2245,6 +2288,8 @@ pre {
   }
 
   .report-entry-list article,
+  .portfolio-card,
+  .parent-summary-report,
   .report-draft,
   .report-summary-grid article,
   .report-axis-grid article {
