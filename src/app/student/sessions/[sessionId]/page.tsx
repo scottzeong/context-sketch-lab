@@ -15,7 +15,7 @@ export default async function StudentSessionPage({
   return (
     <StudentShell
       title="Reading Session"
-      description="글을 읽고 종이에 맥락스케치를 작성한 뒤 제출합니다."
+      description="글을 읽고 종이에 맥락 스케치를 작성한 뒤 제출합니다."
     >
       <StudentSessionDetail sessionId={sessionId} />
     </StudentShell>

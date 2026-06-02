@@ -33,8 +33,8 @@ const statusLabels: Record<StoredSubmissionRecord["status"], string> = {
 const reviewStatusLabels: Record<StoredTutorReviewRecord["status"], string> = {
   draft: "튜터 초안",
   ai_drafted: "AI 초안",
-  approved: "승인됨",
-  published: "공개됨"
+  approved: "최종 저장",
+  published: "전송 완료"
 };
 
 const defaultRubricAxisLabels: Record<string, string> = {
@@ -207,7 +207,7 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
     setBusyAction(status === "published" ? "publish" : "feedback-save");
     setMessage(
       status === "published"
-        ? "피드백을 공개하는 중입니다..."
+        ? "피드백을 보내는 중입니다..."
         : "최종 피드백을 저장하는 중입니다..."
     );
 
@@ -225,8 +225,8 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
       setReview(saved);
       setMessage(
         status === "published"
-          ? "튜터가 수정한 최종 피드백을 공개했습니다."
-          : "최종 피드백을 저장했습니다. 이제 피드백 보기를 사용할 수 있습니다."
+          ? "튜터가 수정한 최종 피드백을 학생과 보호자에게 보냈습니다."
+          : "최종 피드백을 저장했습니다. 이제 피드백 보내기를 사용할 수 있습니다."
       );
       await onReviewSaved?.();
     } catch (error) {
@@ -237,7 +237,8 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
   }
 
   const rubricScores = getRubricScores(review?.evaluationJson);
-  const canViewFeedback = review?.status === "approved" || review?.status === "published";
+  const isFinalSaved = review?.status === "approved" || review?.status === "published";
+  const isFeedbackSent = review?.status === "published";
 
   return (
     <div className="review-workspace enhanced-review-workspace">
@@ -368,21 +369,21 @@ export function TutorReviewWorkspace({ submission, onReviewSaved }: TutorReviewW
           </div>
           <div className="row-actions">
             <button
-              className="secondary-button"
-              disabled={busyAction === "feedback-save" || !review}
-              onClick={() => void saveEditedFeedback(review?.status === "published" ? "published" : "approved")}
+              className={isFinalSaved ? undefined : "secondary-button"}
+              disabled={busyAction === "feedback-save" || !review || isFinalSaved}
+              onClick={() => void saveEditedFeedback("approved")}
               type="button"
             >
               <Save aria-hidden="true" size={17} />
               최종 저장
             </button>
             <button
-              disabled={busyAction === "publish" || !canViewFeedback}
+              disabled={busyAction === "publish" || !isFinalSaved || isFeedbackSent}
               onClick={() => void saveEditedFeedback("published")}
               type="button"
             >
               <ClipboardCheck aria-hidden="true" size={17} />
-              {busyAction === "publish" ? "공개 중" : "피드백 보기"}
+              {busyAction === "publish" ? "전송 중" : "피드백 보내기"}
             </button>
           </div>
         </div>
