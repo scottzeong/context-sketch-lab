@@ -54,8 +54,7 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
         parent: "/parent/dashboard"
       } as const;
 
-      const needsOnboarding =
-        !profile?.display_name || (profile.role === "student" && !profile.age_range);
+      const needsOnboarding = !profile?.display_name;
 
       window.location.href = needsOnboarding
         ? "/onboarding"

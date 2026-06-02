@@ -427,7 +427,7 @@ export type Database = {
         Row: {
           id: string;
           organization_id: string;
-          category: "age_range" | "difficulty_level" | "target_length" | "text_structure";
+          category: "age_range" | "difficulty_level" | "target_length" | "text_structure" | "rubric_axis";
           label: string;
           value: string;
           sort_order: number;
@@ -439,7 +439,7 @@ export type Database = {
         Insert: {
           id?: string;
           organization_id: string;
-          category: "age_range" | "difficulty_level" | "target_length" | "text_structure";
+          category: "age_range" | "difficulty_level" | "target_length" | "text_structure" | "rubric_axis";
           label: string;
           value: string;
           sort_order?: number;

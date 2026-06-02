@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  BookOpenText,
-  CheckCircle2,
-  ClipboardCheck,
-  ListChecks,
-  Save,
-  Sparkles
-} from "lucide-react";
+import { BookOpenText, CheckCircle2, ListChecks, Save, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
@@ -44,29 +37,8 @@ type TextAnalysisView = {
     relationType?: string;
     explanation?: string;
   }>;
-  inferencePoints?: string[];
-  vocabulary?: Array<{
-    term?: string;
-    meaning?: string;
-    whyItMatters?: string;
-  }>;
   discussionQuestions?: string[];
   worksheetSuggestions?: string[];
-};
-
-type FeedbackEvaluationView = {
-  rubricScores?: Array<{
-    axis?: string;
-    score?: number;
-    rationale?: string;
-  }>;
-  feedbackDraft?: {
-    studentFacing?: string;
-    tutorNotes?: string;
-    parentSummary?: string;
-  };
-  recommendedNextActivities?: string[];
-  needsTutorReview?: boolean;
 };
 
 type TextMode = "ai" | "manual";
@@ -76,24 +48,8 @@ const defaults = {
   topic: "친구의 웃음소리를 오해해 발표를 멈춘 상황",
   learningGoal: "감정 추론과 원인-결과 구조를 구분해 설명하기",
   mustInclude: "오해\n긴장\n발표\n다시 확인하기",
-  avoid: "훈계처럼 들리는 결론",
-  tone: "따뜻하고 현실적인 이야기",
-  studentExplanation:
-    "민수가 친구들이 자신을 비웃는다고 생각해서 발표를 멈춘 것 같다고 설명함.",
-  tutorObservation:
-    "학생은 감정 변화는 잘 잡았지만, 친구들의 실제 의도와 민수의 추측을 구분하는 데 도움이 필요함.",
-  keyConnections: "웃음소리\n오해\n긴장\n발표 중단",
-  strengths: "감정의 흐름을 그림과 설명으로 연결함",
-  misconceptions: "사실과 추측을 아직 명확히 구분하지 못함",
-  nextStep: "사실, 추측, 감정을 서로 다른 기호로 구분해 다시 표현하기"
-};
-
-const rubricAxisLabels: Record<string, string> = {
-  situation_inference: "상황 추론",
-  structure: "구조 이해",
-  abstraction: "추상화",
-  perspective_shift: "관점 전환",
-  expression_integration: "표현 통합"
+  avoid: "설교처럼 들리는 결론",
+  tone: "따뜻하고 현실적인 이야기"
 };
 
 function splitLines(value: FormDataEntryValue | null) {
@@ -124,19 +80,13 @@ function asString(value: unknown, fallback = "") {
 function getStatusMessage(action: string | null) {
   if (action === "generate") return "글을 생성하는 중입니다...";
   if (action === "analyze") return "글의 구조를 분석하는 중입니다...";
-  if (action === "evaluate") return "튜터 입력을 피드백 초안으로 정리하는 중입니다...";
   if (action === "save") return "Text 저장소에 저장하는 중입니다...";
   return null;
 }
 
 export function TutorAIWorkbench() {
-  const [generatedText, setGeneratedText] = useState<GeneratedTextView | null>(
-    null
-  );
+  const [generatedText, setGeneratedText] = useState<GeneratedTextView | null>(null);
   const [analysis, setAnalysis] = useState<TextAnalysisView | null>(null);
-  const [evaluation, setEvaluation] = useState<FeedbackEvaluationView | null>(
-    null
-  );
   const [configOptions, setConfigOptions] = useState<ConfigOptionRecord[]>([]);
   const [textMode, setTextMode] = useState<TextMode>("ai");
   const [textSourceType, setTextSourceType] = useState<TextSourceType>("ai_generated");
@@ -158,15 +108,13 @@ export function TutorAIWorkbench() {
   async function postJson(endpoint: string, payload: unknown) {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
     const json = await response.json();
 
     if (!response.ok) {
-      throw new Error(json.error || "Request failed.");
+      throw new Error(json.error || "요청에 실패했습니다.");
     }
 
     return json;
@@ -222,61 +170,12 @@ export function TutorAIWorkbench() {
       estimatedReadingLevel: String(formData.get("ageRange") || ""),
       difficultyLevel: String(formData.get("difficultyLevel") || ""),
       structureType: String(formData.get("textStructure") || ""),
-      tutorRevisionNotes: ["튜터가 직접 입력한 글입니다. 구조 분석 후 세션에 활용하세요."],
-      safetyNotes: ["수업 전 사실 관계, 저작권, 민감 표현을 튜터가 최종 확인하세요."]
+      tutorRevisionNotes: ["튜터가 직접 입력한 글입니다. 저장 후 구조 분석을 실행하세요."],
+      safetyNotes: ["수업 전 표현과 사실 관계를 최종 확인하세요."]
     });
     setTextSourceType("tutor_written");
     setAnalysis(null);
     setSavedTextId(null);
-  }
-
-  async function analyzeText() {
-    if (!generatedText) {
-      setSaveMessage("먼저 글을 작성해 주세요.");
-      return;
-    }
-
-    setBusyAction("analyze");
-    setSaveMessage(null);
-
-    try {
-      const json = await postJson("/api/ai/analyze-text-structure-test", {
-        title: generatedText.title,
-        body: generatedText.body,
-        learningGoal: defaults.learningGoal,
-        targetAgeRange: generatedText.estimatedReadingLevel
-      });
-
-      setAnalysis(json.analysis);
-    } catch (error) {
-      setSaveMessage(error instanceof Error ? error.message : "구조 분석에 실패했습니다.");
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function evaluateFeedback(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusyAction("evaluate");
-    setSaveMessage(null);
-
-    try {
-      const formData = new FormData(event.currentTarget);
-      const json = await postJson("/api/ai/evaluate-tutor-feedback-test", {
-        studentExplanation: formData.get("studentExplanation"),
-        tutorObservation: formData.get("tutorObservation"),
-        keyConnections: splitLines(formData.get("keyConnections")),
-        strengths: splitLines(formData.get("strengths")),
-        misconceptions: splitLines(formData.get("misconceptions")),
-        nextStep: formData.get("nextStep")
-      });
-
-      setEvaluation(json.evaluation);
-    } catch (error) {
-      setSaveMessage(error instanceof Error ? error.message : "피드백 초안 생성에 실패했습니다.");
-    } finally {
-      setBusyAction(null);
-    }
   }
 
   async function saveCurrentText() {
@@ -294,7 +193,7 @@ export function TutorAIWorkbench() {
         title: asString(generatedText.title, "Untitled text"),
         body: asString(generatedText.body),
         ageRange: asString(generatedText.estimatedReadingLevel, "AGE_9_10"),
-        difficultyLevel: asString(generatedText.difficultyLevel, "L4"),
+        difficultyLevel: asString(generatedText.difficultyLevel, "L3"),
         textType: "story",
         structureType: asString(generatedText.structureType, "narrative"),
         status: "draft",
@@ -307,10 +206,35 @@ export function TutorAIWorkbench() {
       setSaveMessage(
         analysis
           ? "글과 구조 분석을 Text 저장소에 저장했습니다."
-          : "글 초안을 Text 저장소에 저장했습니다."
+          : "글을 Text 저장소에 저장했습니다. 이제 구조 분석을 실행할 수 있습니다."
       );
     } catch (error) {
       setSaveMessage(error instanceof Error ? error.message : "저장에 실패했습니다.");
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function analyzeText() {
+    if (!generatedText || !savedTextId || analysis) {
+      return;
+    }
+
+    setBusyAction("analyze");
+    setSaveMessage(null);
+
+    try {
+      const json = await postJson("/api/ai/analyze-text-structure-test", {
+        title: generatedText.title,
+        body: generatedText.body,
+        learningGoal: defaults.learningGoal,
+        targetAgeRange: generatedText.estimatedReadingLevel
+      });
+
+      setAnalysis(json.analysis);
+      setSaveMessage("구조 분석이 완료되었습니다. 분석 결과를 보관하려면 다시 저장하세요.");
+    } catch (error) {
+      setSaveMessage(error instanceof Error ? error.message : "구조 분석에 실패했습니다.");
     } finally {
       setBusyAction(null);
     }
@@ -320,19 +244,16 @@ export function TutorAIWorkbench() {
     <>
       <div className="status-strip" aria-label="Workbench status">
         <span className={generatedText ? "status done" : "status"}>글 작성</span>
+        <span className={savedTextId ? "status done" : "status"}>저장</span>
         <span className={analysis ? "status done" : "status"}>구조 분석</span>
-        <span className={evaluation ? "status done" : "status"}>피드백 초안</span>
-        <span className="status review">튜터 검토 필요</span>
+        <span className="status review">세션 연결 전 튜터 확인</span>
       </div>
 
       {statusMessage ? <p className="workbench-status">{statusMessage}</p> : null}
 
       <div className="workbench workbench-wide">
         <section className="stack">
-          <form
-            className="panel"
-            onSubmit={textMode === "ai" ? generateText : inputText}
-          >
+          <form className="panel" onSubmit={textMode === "ai" ? generateText : inputText}>
             <div className="panel-heading">
               <div>
                 <p className="section-kicker">Step 1</p>
@@ -366,11 +287,7 @@ export function TutorAIWorkbench() {
               </div>
               <div className="field">
                 <label htmlFor="learningGoal">학습 목표</label>
-                <input
-                  id="learningGoal"
-                  name="learningGoal"
-                  defaultValue={defaults.learningGoal}
-                />
+                <input id="learningGoal" name="learningGoal" defaultValue={defaults.learningGoal} />
               </div>
               <div className="field">
                 <label htmlFor="ageRange">연령</label>
@@ -384,7 +301,7 @@ export function TutorAIWorkbench() {
               </div>
               <div className="field">
                 <label htmlFor="difficultyLevel">난이도</label>
-                <select id="difficultyLevel" name="difficultyLevel" defaultValue="L4">
+                <select id="difficultyLevel" name="difficultyLevel" defaultValue="L3">
                   {dropdownOptions.difficulty_level.map((option) => (
                     <option key={option.id} value={option.value}>
                       {option.label}
@@ -404,11 +321,7 @@ export function TutorAIWorkbench() {
               </div>
               <div className="field">
                 <label htmlFor="textStructure">글 구조</label>
-                <select
-                  id="textStructure"
-                  name="textStructure"
-                  defaultValue="cause_effect"
-                >
+                <select id="textStructure" name="textStructure" defaultValue="cause_effect">
                   {dropdownOptions.text_structure.map((option) => (
                     <option key={option.id} value={option.value}>
                       {option.label}
@@ -425,18 +338,13 @@ export function TutorAIWorkbench() {
                 <div className="grid-two">
                   <div className="field">
                     <label htmlFor="mustInclude">포함할 요소</label>
-                    <textarea
-                      id="mustInclude"
-                      name="mustInclude"
-                      defaultValue={defaults.mustInclude}
-                    />
+                    <textarea id="mustInclude" name="mustInclude" defaultValue={defaults.mustInclude} />
                   </div>
                   <div className="field">
                     <label htmlFor="avoid">피할 요소</label>
                     <textarea id="avoid" name="avoid" defaultValue={defaults.avoid} />
                   </div>
                 </div>
-
                 <div className="field">
                   <label htmlFor="tone">톤</label>
                   <input id="tone" name="tone" defaultValue={defaults.tone} />
@@ -446,7 +354,7 @@ export function TutorAIWorkbench() {
               <>
                 <div className="field">
                   <label htmlFor="manualTitle">글 제목</label>
-                  <input id="manualTitle" name="manualTitle" placeholder="붙여 넣은 글의 제목" />
+                  <input id="manualTitle" name="manualTitle" placeholder="붙여 넣을 글의 제목" />
                 </div>
                 <div className="field">
                   <label htmlFor="manualBody">글 본문</label>
@@ -460,66 +368,6 @@ export function TutorAIWorkbench() {
               </>
             )}
           </form>
-
-          <form className="panel compact-feedback-form" onSubmit={evaluateFeedback}>
-            <div className="panel-heading">
-              <div>
-                <p className="section-kicker">Step 3</p>
-                <h2>튜터 입력 기반 피드백 초안</h2>
-              </div>
-              <button disabled={busyAction === "evaluate"} type="submit">
-                <ClipboardCheck aria-hidden="true" size={18} />
-                {busyAction === "evaluate" ? "작성 중" : "피드백 초안"}
-              </button>
-            </div>
-
-            <div className="field">
-              <label htmlFor="studentExplanation">학생 설명</label>
-              <textarea
-                id="studentExplanation"
-                name="studentExplanation"
-                defaultValue={defaults.studentExplanation}
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="tutorObservation">튜터 관찰</label>
-              <textarea
-                id="tutorObservation"
-                name="tutorObservation"
-                defaultValue={defaults.tutorObservation}
-              />
-            </div>
-            <div className="grid-two">
-              <div className="field">
-                <label htmlFor="keyConnections">핵심 연결</label>
-                <textarea
-                  id="keyConnections"
-                  name="keyConnections"
-                  defaultValue={defaults.keyConnections}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="strengths">강점</label>
-                <textarea
-                  id="strengths"
-                  name="strengths"
-                  defaultValue={defaults.strengths}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="misconceptions">오해/보완점</label>
-                <textarea
-                  id="misconceptions"
-                  name="misconceptions"
-                  defaultValue={defaults.misconceptions}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="nextStep">다음 과제</label>
-                <textarea id="nextStep" name="nextStep" defaultValue={defaults.nextStep} />
-              </div>
-            </div>
-          </form>
         </section>
 
         <section className="stack">
@@ -527,13 +375,9 @@ export function TutorAIWorkbench() {
             <div className="panel-heading">
               <div>
                 <p className="section-kicker">Generated Text</p>
-                <h2>{generatedText?.title || "생성된 글"}</h2>
+                <h2>{generatedText?.title || "작성된 글"}</h2>
               </div>
               <div className="row-actions">
-                <button disabled={busyAction === "analyze"} onClick={analyzeText}>
-                  <ListChecks aria-hidden="true" size={18} />
-                  {busyAction === "analyze" ? "분석 중" : "구조 분석"}
-                </button>
                 <button
                   className="secondary-button"
                   disabled={!generatedText || busyAction === "save"}
@@ -542,6 +386,14 @@ export function TutorAIWorkbench() {
                 >
                   <Save aria-hidden="true" size={17} />
                   저장
+                </button>
+                <button
+                  disabled={!savedTextId || Boolean(analysis) || busyAction === "analyze"}
+                  onClick={analyzeText}
+                  type="button"
+                >
+                  <ListChecks aria-hidden="true" size={18} />
+                  {busyAction === "analyze" ? "분석 중" : "구조 분석"}
                 </button>
               </div>
             </div>
@@ -577,7 +429,7 @@ export function TutorAIWorkbench() {
             ) : (
               <div className="empty-inline">
                 <BookOpenText aria-hidden="true" size={24} />
-                <strong>아직 생성된 글이 없습니다.</strong>
+                <strong>아직 작성된 글이 없습니다.</strong>
                 <p>왼쪽에서 AI로 생성하거나 튜터가 직접 글을 입력하세요.</p>
               </div>
             )}
@@ -621,9 +473,7 @@ export function TutorAIWorkbench() {
                           {paragraph.index}. {paragraph.role}
                         </strong>
                         <p>{paragraph.summary}</p>
-                        {paragraph.keyDetails?.length ? (
-                          <small>{paragraph.keyDetails.join(" / ")}</small>
-                        ) : null}
+                        {paragraph.keyDetails?.length ? <small>{paragraph.keyDetails.join(" / ")}</small> : null}
                       </li>
                     ))}
                   </ol>
@@ -635,7 +485,7 @@ export function TutorAIWorkbench() {
                     {(analysis.keyRelations || []).map((relation) => (
                       <article key={`${relation.from}-${relation.to}`}>
                         <strong>
-                          {relation.from} → {relation.to}
+                          {relation.from} - {relation.to}
                         </strong>
                         <span>{relation.relationType}</span>
                         <p>{relation.explanation}</p>
@@ -665,53 +515,8 @@ export function TutorAIWorkbench() {
             ) : (
               <div className="empty-inline">
                 <CheckCircle2 aria-hidden="true" size={24} />
-                <strong>구조 분석을 실행하면 여기에 정리됩니다.</strong>
-                <p>핵심 구조, 문단 흐름, 관계, 질문 후보를 튜터용으로 보여줍니다.</p>
-              </div>
-            )}
-          </section>
-
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <p className="section-kicker">Feedback Draft</p>
-                <h2>피드백 초안</h2>
-              </div>
-              <span className={evaluation ? "status done" : "status"}>draft</span>
-            </div>
-
-            {evaluation?.feedbackDraft ? (
-              <>
-                <div className="feedback-draft-grid">
-                  <article>
-                    <h3>학생용</h3>
-                    <p>{evaluation.feedbackDraft.studentFacing}</p>
-                  </article>
-                  <article>
-                    <h3>튜터 메모</h3>
-                    <p>{evaluation.feedbackDraft.tutorNotes}</p>
-                  </article>
-                  <article>
-                    <h3>보호자 요약</h3>
-                    <p>{evaluation.feedbackDraft.parentSummary}</p>
-                  </article>
-                </div>
-                <div className="rubric-strip">
-                  {(evaluation.rubricScores || []).map((score) => (
-                    <article key={score.axis}>
-                      <strong>
-                        {rubricAxisLabels[String(score.axis)] || score.axis}
-                      </strong>
-                      <span>{score.score}/5</span>
-                      <p>{score.rationale}</p>
-                    </article>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="empty-inline">
-                <strong>아직 피드백 초안이 없습니다.</strong>
-                <p>왼쪽 하단의 튜터 입력을 바탕으로 AI 초안을 생성하세요.</p>
+                <strong>저장 후 구조 분석을 실행할 수 있습니다.</strong>
+                <p>글을 먼저 Text 저장소에 저장하면 구조 분석 버튼이 활성화됩니다.</p>
               </div>
             )}
           </section>

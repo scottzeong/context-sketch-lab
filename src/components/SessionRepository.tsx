@@ -35,7 +35,7 @@ function formatDate(value?: string) {
   }).format(new Date(value));
 }
 
-export function SessionRepository() {
+export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) {
   const [sessions, setSessions] = useState<StoredSessionRecord[]>([]);
   const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -226,6 +226,7 @@ export function SessionRepository() {
                 <p className="section-kicker">{statusLabels[selectedSession.status]}</p>
                 <h2>{selectedSession.title}</h2>
               </div>
+              {!readOnly ? (
               <div className="row-actions">
                 <button
                   className="secondary-button"
@@ -248,6 +249,7 @@ export function SessionRepository() {
                   삭제
                 </button>
               </div>
+              ) : null}
             </div>
 
             <div className="metadata-grid">

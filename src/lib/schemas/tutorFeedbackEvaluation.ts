@@ -12,13 +12,7 @@ export const tutorFeedbackEvaluationInputSchema = z.object({
 export const tutorFeedbackEvaluationSchema = z.object({
   rubricScores: z.array(
     z.object({
-      axis: z.enum([
-        "situation_inference",
-        "structure",
-        "abstraction",
-        "perspective_shift",
-        "expression_integration"
-      ]),
+      axis: z.string().min(1),
       score: z.number().int().min(1).max(5),
       rationale: z.string().min(1)
     })
@@ -55,14 +49,7 @@ export const tutorFeedbackEvaluationJsonSchema = {
         required: ["axis", "score", "rationale"],
         properties: {
           axis: {
-            type: "string",
-            enum: [
-              "situation_inference",
-              "structure",
-              "abstraction",
-              "perspective_shift",
-              "expression_integration"
-            ]
+            type: "string"
           },
           score: { type: "number", minimum: 1, maximum: 5 },
           rationale: { type: "string" }

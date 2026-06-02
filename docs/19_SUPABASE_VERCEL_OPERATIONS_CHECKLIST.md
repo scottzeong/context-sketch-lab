@@ -24,6 +24,7 @@
 009_security_hardening.sql
 010_report_drafts.sql
 011_config_options.sql
+012_rubric_config_options.sql
 ```
 
 ## SQL 실행 후 확인

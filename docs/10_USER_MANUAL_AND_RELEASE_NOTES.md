@@ -60,6 +60,7 @@ AI는 학생 그림을 최종 판정하지 않습니다. 학생 스케치 해석
 - Supabase Auth 기반 role 라우팅
 - 관리자 계정 생성 및 권한 관리
 - 관리자 글 작성 드롭다운 설정
+- 관리자 루브릭 평가구조 설정
 - 튜터 AI Workbench
 - AI 글 생성 및 튜터 직접 글 입력
 - Text 저장소
@@ -82,9 +83,14 @@ AI는 학생 그림을 최종 판정하지 않습니다. 학생 스케치 해석
 - 왼쪽 메뉴와 브랜드 영역 크기를 조정했습니다.
 - 운영 화면 하단의 `v1 planning build` 표시와 Tutor Dashboard의 `Next Build` 영역을 제거했습니다.
 - hover 시 버튼 글자가 사라지지 않도록 링크 색상을 보정했습니다.
+- 튜터 메뉴에 `Submissions`를 추가했습니다.
+- 학생 제출 이미지를 보면서 AI 피드백 초안을 만들고, 튜터가 수정한 최종본만 공개하도록 리뷰 흐름을 정리했습니다.
+- 관리자는 AI Workbench, Submissions, 새 세션 생성에 접근하지 않고 Text, Groups, Sessions, Reports를 참조만 하도록 권한을 조정했습니다.
+- 글 작성 드롭다운과 루브릭 설정을 항목별 저장이 아니라 카테고리별 일괄 저장 방식으로 변경했습니다.
+- Workbench의 피드백 초안 영역을 제거하고 글 작성, 저장, 구조 분석에 집중하도록 정리했습니다.
 
 ## 운영 체크
 
-- 새 Supabase 프로젝트에는 `supabase/migrations/011_config_options.sql`까지 순서대로 적용합니다.
+- 새 Supabase 프로젝트에는 `supabase/migrations/012_rubric_config_options.sql`까지 순서대로 적용합니다.
 - Vercel 환경 변수에 Supabase URL, anon key, service role key, OpenAI API key가 입력되어야 합니다.
 - 배포 후 `/`, `/login`, `/manual`, `/admin/users`, `/tutor/workbench`, `/student/dashboard`, `/parent/dashboard`를 확인합니다.

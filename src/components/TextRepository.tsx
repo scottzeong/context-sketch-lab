@@ -2,11 +2,7 @@
 
 import { BookOpenText, CheckCircle2, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import {
-  deleteStoredText,
-  getStoredTexts,
-  StoredTextRecord
-} from "@/lib/textRepository";
+import { deleteStoredText, getStoredTexts, StoredTextRecord } from "@/lib/textRepository";
 
 const statusLabels: Record<StoredTextRecord["status"], string> = {
   draft: "초안",
@@ -24,12 +20,12 @@ function formatDate(value: string) {
 }
 
 function uniqueValues(texts: StoredTextRecord[], key: keyof StoredTextRecord) {
-  return Array.from(
-    new Set(texts.map((text) => String(text[key] || "")).filter(Boolean))
-  ).sort((a, b) => a.localeCompare(b));
+  return Array.from(new Set(texts.map((text) => String(text[key] || "")).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b)
+  );
 }
 
-export function TextRepository() {
+export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
   const [texts, setTexts] = useState<StoredTextRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -56,22 +52,15 @@ export function TextRepository() {
     return () => window.removeEventListener("text-repository-change", refresh);
   }, []);
 
-  const structureOptions = useMemo(
-    () => uniqueValues(texts, "structureType"),
-    [texts]
-  );
-  const difficultyOptions = useMemo(
-    () => uniqueValues(texts, "difficultyLevel"),
-    [texts]
-  );
+  const structureOptions = useMemo(() => uniqueValues(texts, "structureType"), [texts]);
+  const difficultyOptions = useMemo(() => uniqueValues(texts, "difficultyLevel"), [texts]);
 
   const filteredTexts = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
     return texts.filter((item) => {
       const matchesStatus = statusFilter === "all" || item.status === statusFilter;
-      const matchesStructure =
-        structureFilter === "all" || item.structureType === structureFilter;
+      const matchesStructure = structureFilter === "all" || item.structureType === structureFilter;
       const matchesDifficulty =
         difficultyFilter === "all" || item.difficultyLevel === difficultyFilter;
       const matchesQuery =
@@ -92,10 +81,14 @@ export function TextRepository() {
     });
   }, [difficultyFilter, query, statusFilter, structureFilter, texts]);
 
-  const selectedText =
-    texts.find((item) => item.id === selectedId) || filteredTexts[0] || null;
+  const selectedText = texts.find((item) => item.id === selectedId) || filteredTexts[0] || null;
 
   async function removeText(id: string) {
+    if (readOnly) {
+      setMessage("관리자는 텍스트를 참조만 할 수 있습니다.");
+      return;
+    }
+
     try {
       await deleteStoredText(id);
       const nextTexts = await getStoredTexts();
@@ -188,8 +181,8 @@ export function TextRepository() {
                 <span>
                   <strong>{item.title}</strong>
                   <small>
-                    {item.structureType || "구조 미지정"} ·{" "}
-                    {item.difficultyLevel || "난이도 미지정"} · {formatDate(item.updatedAt)}
+                    {item.structureType || "구조 미지정"} |{" "}
+                    {item.difficultyLevel || "난이도 미지정"} | {formatDate(item.updatedAt)}
                   </small>
                 </span>
                 <BookOpenText aria-hidden="true" size={18} />
@@ -214,14 +207,16 @@ export function TextRepository() {
               </div>
               <div className="row-actions">
                 <span className="status review">{statusLabels[selectedText.status]}</span>
-                <button
-                  className="danger-button"
-                  onClick={() => removeText(selectedText.id)}
-                  type="button"
-                >
-                  <Trash2 aria-hidden="true" size={17} />
-                  삭제
-                </button>
+                {!readOnly ? (
+                  <button
+                    className="danger-button"
+                    onClick={() => removeText(selectedText.id)}
+                    type="button"
+                  >
+                    <Trash2 aria-hidden="true" size={17} />
+                    삭제
+                  </button>
+                ) : null}
               </div>
             </div>
 
@@ -242,7 +237,7 @@ export function TextRepository() {
             <article className="text-body-preview">{selectedText.body}</article>
 
             <div className="analysis-preview">
-              <h3>구조 분석 JSON</h3>
+              <h3>구조 분석 데이터</h3>
               <pre>
                 {selectedText.analysisJson
                   ? JSON.stringify(selectedText.analysisJson, null, 2)

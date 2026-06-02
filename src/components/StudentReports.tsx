@@ -122,7 +122,7 @@ function buildReportDraft(group: StudentReportGroup, periodLabel: string) {
     .join("\n");
 }
 
-export function StudentReports() {
+export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
   const [sessions, setSessions] = useState<StoredSessionRecord[]>([]);
   const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
@@ -266,6 +266,11 @@ export function StudentReports() {
   }
 
   async function saveDraft() {
+    if (readOnly) {
+      setMessage("관리자는 리포트를 참조만 할 수 있습니다.");
+      return;
+    }
+
     if (!selectedGroup || !reportBody.trim()) {
       return;
     }
@@ -472,6 +477,7 @@ export function StudentReports() {
               <h3>학부모 리포트 초안</h3>
               <textarea
                 className="report-draft report-draft-editor"
+                readOnly={readOnly}
                 onChange={(event) => setReportBody(event.target.value)}
                 value={reportBody}
               />

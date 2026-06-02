@@ -13,7 +13,7 @@ import {
   saveLearningGroup
 } from "@/lib/groupRepository";
 
-export function GroupManager() {
+export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
   const [groups, setGroups] = useState<LearningGroupRecord[]>([]);
   const [students, setStudents] = useState<GroupStudentRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -68,6 +68,10 @@ export function GroupManager() {
 
   async function saveGroup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (readOnly) {
+      setMessage("관리자는 그룹을 참조만 할 수 있습니다.");
+      return;
+    }
     setIsSaving(true);
     setMessage(null);
 
@@ -90,11 +94,17 @@ export function GroupManager() {
   }
 
   async function createNewGroup() {
+    if (readOnly) {
+      return;
+    }
     setSelectedId(null);
     setMessage("새 그룹 정보를 입력한 뒤 저장하세요.");
   }
 
   async function removeGroup() {
+    if (readOnly) {
+      return;
+    }
     if (!selectedGroup) {
       return;
     }
@@ -106,6 +116,9 @@ export function GroupManager() {
   }
 
   async function addStudent(studentId: string) {
+    if (readOnly) {
+      return;
+    }
     if (!selectedGroup || !studentId) {
       return;
     }
@@ -115,6 +128,9 @@ export function GroupManager() {
   }
 
   async function removeStudent(studentId: string) {
+    if (readOnly) {
+      return;
+    }
     if (!selectedGroup) {
       return;
     }

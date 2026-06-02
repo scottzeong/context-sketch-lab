@@ -19,6 +19,14 @@ function isProtectedPath(pathname: string) {
 
 function roleAllowed(pathname: string, role: UserRole) {
   if (role === "admin") {
+    if (pathname.startsWith("/tutor/workbench") || pathname.startsWith("/tutor/submissions")) {
+      return false;
+    }
+
+    if (pathname.startsWith("/tutor/sessions/new")) {
+      return false;
+    }
+
     return true;
   }
 

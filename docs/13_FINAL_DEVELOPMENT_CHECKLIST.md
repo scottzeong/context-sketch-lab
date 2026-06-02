@@ -57,7 +57,7 @@
 - `npm.cmd run build` 통과
 - Vercel Production 배포 성공
 - Production 환경 변수 등록 완료
-- Supabase migration 001-011 적용 완료
+- Supabase migration 001-012 적용 완료
 - Production domain `https://roterfaden.kr` 접속 성공
 
 ## 모바일 QA

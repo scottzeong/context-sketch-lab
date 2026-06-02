@@ -73,6 +73,7 @@ export function OnboardingProfileForm() {
       });
       setProfile(saved);
       setMessage("프로필을 저장했습니다.");
+      window.location.href = roleHome[saved.role] || "/login";
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "프로필 저장에 실패했습니다.");
     } finally {
@@ -167,7 +168,7 @@ export function OnboardingProfileForm() {
         <div className="row-actions">
           <button disabled={isSaving} type="submit">
             <Save aria-hidden="true" size={17} />
-            {isSaving ? "저장 중" : "프로필 저장"}
+            {isSaving ? "저장 중" : profile.displayName ? "프로필 수정" : "프로필 저장"}
           </button>
           <a className="primary-link" href={nextHref}>
             내 작업공간으로 이동

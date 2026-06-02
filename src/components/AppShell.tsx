@@ -4,6 +4,7 @@ import {
   ClipboardCheck,
   LayoutDashboard,
   LibraryBig,
+  Inbox,
   Settings,
   Sparkles,
   Users,
@@ -25,10 +26,11 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/tutor/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["tutor"] },
-  { href: "/tutor/workbench", label: "AI Workbench", icon: Sparkles, roles: ["admin", "tutor"] },
+  { href: "/tutor/workbench", label: "AI Workbench", icon: Sparkles, roles: ["tutor"] },
   { href: "/tutor/groups", label: "Groups", icon: Users, roles: ["admin", "tutor"] },
   { href: "/tutor/texts", label: "Texts", icon: BookOpenText, roles: ["admin", "tutor"] },
   { href: "/tutor/sessions", label: "Sessions", icon: ClipboardCheck, roles: ["admin", "tutor"] },
+  { href: "/tutor/submissions", label: "Submissions", icon: Inbox, roles: ["tutor"] },
   { href: "/tutor/reports", label: "Reports", icon: BarChart3, roles: ["admin", "tutor"] },
   { href: "/admin/users", label: "Admin Users", icon: UserRoundCog, roles: ["admin"] },
   { href: "/manual", label: "Manual", icon: LibraryBig, roles: ["admin", "tutor"] }
