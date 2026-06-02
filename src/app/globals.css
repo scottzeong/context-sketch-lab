@@ -28,9 +28,7 @@
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top right, rgba(217, 43, 43, 0.08), transparent 28rem),
-    linear-gradient(180deg, var(--bg) 0%, var(--canvas) 38%, var(--canvas) 100%);
+  background: var(--bg);
   color: var(--ink);
   font-family: "Pretendard", Arial, Helvetica, sans-serif;
 }
