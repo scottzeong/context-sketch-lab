@@ -3,10 +3,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { UserSignOutButton } from "@/components/UserSignOutButton";
 
 const roleLabels = {
-  admin: "Admin",
-  tutor: "Tutor",
-  student: "Student",
-  parent: "Parent"
+  admin: "관리자",
+  tutor: "튜터",
+  student: "학생",
+  parent: "보호자"
 } as const;
 
 type UserAccountSummaryProps = {
@@ -30,9 +30,9 @@ export async function UserAccountSummary({ compact = false }: UserAccountSummary
       .eq("id", user.id)
       .single();
 
-    const email = profile?.email || user.email || "Signed in";
+    const email = profile?.email || user.email || "로그인됨";
     const displayName = profile?.display_name || email;
-    const role = profile?.role ? roleLabels[profile.role] : "User";
+    const role = profile?.role ? roleLabels[profile.role] : "사용자";
 
     return (
       <div className={compact ? "user-summary compact" : "user-summary"}>

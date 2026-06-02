@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { requireApiRole } from "@/lib/api/auth";
+import { enforceRateLimit } from "@/lib/api/rateLimit";
 import { createStructuredOutput } from "@/lib/ai/structuredOutput";
 import { openaiTextModel } from "@/lib/ai/openai";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   generatedTextJsonSchema,
   generatedTextSchema,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/schemas/textGeneration";
 
 export const runtime = "nodejs";
+const AI_RATE_LIMIT = { limit: 20, windowMs: 60_000 };
 
 const SYSTEM_PROMPT = `You are the Text Generator Agent for Roter Faden.
 
@@ -27,9 +29,21 @@ Return a practical draft a tutor can edit quickly.`;
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireApiRole(["tutor"]);
+    if (auth.error) {
+      return auth.error;
+    }
+
+    const rateLimit = enforceRateLimit(
+      `ai:generate-text:${auth.context.userId}`,
+      AI_RATE_LIMIT
+    );
+    if (rateLimit) {
+      return rateLimit;
+    }
+
     const input = textGenerationInputSchema.parse(await request.json());
-    const supabase = await createSupabaseServerClient();
-    const { data: structureOptions } = await supabase
+    const { data: structureOptions } = await auth.context.supabase
       .from("config_options")
       .select("*")
       .eq("category", "text_structure")
@@ -59,7 +73,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
       },
       { status: 400 }
     );

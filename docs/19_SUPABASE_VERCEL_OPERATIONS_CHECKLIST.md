@@ -27,6 +27,9 @@
 012_rubric_config_options.sql
 013_admin_option_prompts_and_weights.sql
 014_submission_image_rls_fix.sql
+015_secure_review_feedback_rls.sql
+016_split_submission_update_rls.sql
+017_performance_indexes.sql
 ```
 
 ## SQL 실행 후 확인
@@ -42,6 +45,9 @@
 - `submission-images` Storage 정책이 공개 접근이 아닌 권한 기반으로 되어 있는가?
 - 학생 계정으로 스케치 이미지를 제출했을 때 `submission_images` row가 생성되는가?
 - 학생 포트폴리오 상세에서 제출 이미지가 signed URL로 표시되는가?
+- 학생과 보호자 계정에서 공개된 피드백만 조회되는가?
+- 학생이 제출물 상태를 `under_review` 또는 `feedback_published`로 직접 바꿀 수 없는가?
+- 세션/제출/피드백/부모 연결 조회에 필요한 인덱스가 생성되었는가?
 
 ## Vercel 환경 변수
 

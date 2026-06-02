@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { requireApiRole } from "@/lib/api/auth";
+import { enforceRateLimit } from "@/lib/api/rateLimit";
 import { createStructuredOutput } from "@/lib/ai/structuredOutput";
 import { openaiTextModel } from "@/lib/ai/openai";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   tutorFeedbackEvaluationInputSchema,
   tutorFeedbackEvaluationJsonSchema,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/schemas/tutorFeedbackEvaluation";
 
 export const runtime = "nodejs";
+const AI_RATE_LIMIT = { limit: 20, windowMs: 60_000 };
 
 const SYSTEM_PROMPT = `You are the Tutor Feedback Evaluation Agent for Roter Faden.
 
@@ -25,9 +27,21 @@ The result is never a final judgment; needsTutorReview should be true.`;
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireApiRole(["tutor"]);
+    if (auth.error) {
+      return auth.error;
+    }
+
+    const rateLimit = enforceRateLimit(
+      `ai:evaluate-tutor-feedback:${auth.context.userId}`,
+      AI_RATE_LIMIT
+    );
+    if (rateLimit) {
+      return rateLimit;
+    }
+
     const input = tutorFeedbackEvaluationInputSchema.parse(await request.json());
-    const supabase = await createSupabaseServerClient();
-    const { data: configOptions } = await supabase
+    const { data: configOptions } = await auth.context.supabase
       .from("config_options")
       .select("*")
       .in("category", ["rubric_axis", "rubric_weight"])
@@ -81,7 +95,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."
       },
       { status: 400 }
     );

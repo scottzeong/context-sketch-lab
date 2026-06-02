@@ -64,8 +64,8 @@ async function mapSubmission(row: SubmissionRow): Promise<StoredSubmissionRecord
     id: row.id,
     sessionId: row.session_id,
     studentId: row.student_id || undefined,
-    sessionTitle: row.learning_sessions?.title || "Untitled session",
-    studentName: row.student_name || "Student",
+    sessionTitle: row.learning_sessions?.title || "제목 없는 세션",
+    studentName: row.student_name || "학생",
     studentExplanation: row.student_explanation || "",
     importantConnection: row.important_connection || "",
     difficultPart: row.difficult_part || "",
@@ -92,7 +92,7 @@ async function selectSubmissions(sessionId?: string) {
   const { data, error } = await query;
 
   if (error) {
-    throw new Error(`제출 저장에 실패했습니다. ${error.message}`);
+    throw new Error(`제출 목록을 불러오지 못했습니다. ${error.message}`);
   }
 
   return Promise.all(((data || []) as unknown as SubmissionRow[]).map(mapSubmission));

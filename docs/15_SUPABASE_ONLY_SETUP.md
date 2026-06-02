@@ -24,6 +24,20 @@ Supabase SQL Editor 또는 Supabase CLI에서 아래 순서대로 적용한다.
 supabase/migrations/001_core_schema.sql
 supabase/migrations/002_texts_sessions_reviews.sql
 supabase/migrations/003_auth_storage_rls.sql
+supabase/migrations/004_profile_admin_policies.sql
+supabase/migrations/005_learning_group_policies.sql
+supabase/migrations/006_parent_view_policies.sql
+supabase/migrations/007_parent_link_admin_policies.sql
+supabase/migrations/008_account_status.sql
+supabase/migrations/009_security_hardening.sql
+supabase/migrations/010_report_drafts.sql
+supabase/migrations/011_config_options.sql
+supabase/migrations/012_rubric_config_options.sql
+supabase/migrations/013_admin_option_prompts_and_weights.sql
+supabase/migrations/014_submission_image_rls_fix.sql
+supabase/migrations/015_secure_review_feedback_rls.sql
+supabase/migrations/016_split_submission_update_rls.sql
+supabase/migrations/017_performance_indexes.sql
 ```
 
 `003_auth_storage_rls.sql`은 다음을 포함한다.
@@ -33,6 +47,8 @@ supabase/migrations/003_auth_storage_rls.sql
 - role 기반 protected route에 필요한 profile role 저장
 - 텍스트, 세션, 제출물, 이미지, 리뷰, 피드백 RLS policy
 - Storage object read/upload policy
+
+이후 migration은 관리자 설정, 보호자 연결, 리포트 저장, 이미지 업로드 RLS 보강, 공개 피드백 보안 강화, 제출 상태 권한 분리, 운영 조회 인덱스를 순서대로 추가한다.
 
 ## 3. 계정과 조직
 

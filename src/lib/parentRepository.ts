@@ -1,9 +1,8 @@
 import {
-  getPublishedFeedbackForSubmission,
+  getPublishedPortfolioEntries,
   PortfolioEntry
 } from "@/lib/portfolioRepository";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getStoredSubmissions } from "@/lib/submissionRepository";
 
 export type ParentStudentRecord = {
   id: string;
@@ -27,18 +26,11 @@ export async function getLinkedParentStudents(): Promise<ParentStudentRecord[]> 
     profiles?: { id: string; display_name: string | null; email: string | null } | null;
   }>).map((row) => ({
     id: row.student_id,
-    displayName: row.profiles?.display_name || row.profiles?.email || "Student",
+    displayName: row.profiles?.display_name || row.profiles?.email || "학생",
     email: row.profiles?.email || ""
   }));
 }
 
 export async function getParentPortfolioEntries(): Promise<PortfolioEntry[]> {
-  const submissions = await getStoredSubmissions();
-  const entries = await Promise.all(
-    submissions
-      .filter((submission) => submission.status === "feedback_published")
-      .map((submission) => getPublishedFeedbackForSubmission(submission.id))
-  );
-
-  return entries.filter((entry): entry is PortfolioEntry => Boolean(entry));
+  return getPublishedPortfolioEntries();
 }

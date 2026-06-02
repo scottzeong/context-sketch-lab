@@ -145,8 +145,8 @@ function mapParentStudentLink(row: {
   parent?: { display_name: string | null; email: string | null } | null;
   student?: { display_name: string | null; email: string | null } | null;
 }): ParentStudentLinkRecord {
-  const parentName = row.parent?.display_name || row.parent?.email || "Parent";
-  const studentName = row.student?.display_name || row.student?.email || "Student";
+  const parentName = row.parent?.display_name || row.parent?.email || "보호자";
+  const studentName = row.student?.display_name || row.student?.email || "학생";
 
   return {
     id: row.id,

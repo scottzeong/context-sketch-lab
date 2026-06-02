@@ -28,7 +28,7 @@ export function UserSignOutButton() {
       type="button"
     >
       <LogOut aria-hidden="true" size={16} />
-      {isSigningOut ? "Logging out" : "Log out"}
+      {isSigningOut ? "로그아웃 중" : "Log out"}
     </button>
   );
 }
