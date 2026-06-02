@@ -13,7 +13,7 @@ export function UserSignOutButton() {
     try {
       const supabase = createSupabaseBrowserClient();
       await supabase.auth.signOut();
-      window.location.href = "/login";
+      window.location.href = "/";
     } finally {
       setIsSigningOut(false);
     }
@@ -21,7 +21,7 @@ export function UserSignOutButton() {
 
   return (
     <button
-      aria-label="로그아웃"
+      aria-label="Log out"
       className="user-signout-button"
       disabled={isSigningOut}
       onClick={signOut}

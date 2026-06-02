@@ -105,7 +105,7 @@ export function StudentDashboard() {
             <div className="empty-inline">
               <strong>아직 배포된 세션이 없습니다.</strong>
               <p>
-                튜터가 내 그룹 또는 전체 학생 대상으로 세션을 공개하면 여기에
+                튜터가 내 Class 또는 전체 학생 대상으로 세션을 공개하면 여기에
                 표시됩니다.
               </p>
             </div>

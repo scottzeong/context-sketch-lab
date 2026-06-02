@@ -449,7 +449,7 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
             </select>
           </div>
           <div className="field">
-            <label htmlFor="report-group-filter">그룹</label>
+            <label htmlFor="report-group-filter">Class</label>
             <select
               id="report-group-filter"
               onChange={(event) => {
@@ -459,7 +459,7 @@ export function StudentReports({ readOnly = false }: { readOnly?: boolean }) {
               value={groupFilter}
             >
               <option value="all">전체</option>
-              <option value="ungrouped">그룹 없는 세션</option>
+              <option value="ungrouped">Class 없는 세션</option>
               {groups.map((group) => (
                 <option key={group.id} value={group.id}>
                   {group.name}

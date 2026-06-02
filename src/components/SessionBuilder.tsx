@@ -5,10 +5,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getLearningGroups, LearningGroupRecord } from "@/lib/groupRepository";
 import { getStoredTexts, StoredTextRecord } from "@/lib/textRepository";
-import {
-  saveStoredSession,
-  WorksheetTemplateType
-} from "@/lib/sessionRepository";
+import { saveStoredSession, WorksheetTemplateType } from "@/lib/sessionRepository";
 
 const templateLabels: Record<WorksheetTemplateType, string> = {
   basic: "기본형",
@@ -32,8 +29,7 @@ export function SessionBuilder() {
   const [selectedTextId, setSelectedTextId] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [textQuery, setTextQuery] = useState("");
-  const [worksheetTemplate, setWorksheetTemplate] =
-    useState<WorksheetTemplateType>("basic");
+  const [worksheetTemplate, setWorksheetTemplate] = useState<WorksheetTemplateType>("basic");
   const [message, setMessage] = useState<string | null>(null);
   const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -111,19 +107,15 @@ export function SessionBuilder() {
         textId: selectedText.id,
         textTitle: selectedText.title,
         groupId: selectedGroup?.id,
-        learningGoal: String(
-          formData.get("learningGoal") || selectedText.learningGoal || ""
-        ),
+        learningGoal: String(formData.get("learningGoal") || selectedText.learningGoal || ""),
         worksheetTemplate,
         groupName: selectedGroup?.name || "전체 학생",
-        status: String(formData.get("status") || "draft") as
-          | "draft"
-          | "published",
+        status: String(formData.get("status") || "draft") as "draft" | "published",
         scheduledFor: String(formData.get("scheduledFor") || "")
       });
 
       setSavedSessionId(session.id);
-      setMessage("세션을 저장했습니다. 세션 목록에서 상태와 그룹을 관리할 수 있습니다.");
+      setMessage("세션을 저장했습니다. 세션 목록에서 상태와 Class를 관리할 수 있습니다.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "세션 저장에 실패했습니다.");
     } finally {
@@ -179,7 +171,7 @@ export function SessionBuilder() {
           >
             {filteredTexts.map((text) => (
               <option key={text.id} value={text.id}>
-                {text.title} · {text.structureType || "구조 미지정"}
+                {text.title} | {text.structureType || "구조 미지정"}
               </option>
             ))}
           </select>
@@ -195,7 +187,7 @@ export function SessionBuilder() {
             />
           </div>
           <div className="field">
-            <label htmlFor="groupId">배포 그룹</label>
+            <label htmlFor="groupId">배포 Class</label>
             <select
               id="groupId"
               name="groupId"
@@ -214,10 +206,10 @@ export function SessionBuilder() {
 
         {!groups.length ? (
           <div className="empty-inline">
-            <strong>아직 그룹이 없습니다.</strong>
-            <p>그룹을 만들면 세션을 특정 수업반에 배포할 수 있습니다.</p>
+            <strong>아직 Class가 없습니다.</strong>
+            <p>Class를 만들면 세션을 특정 수업반에 배포할 수 있습니다.</p>
             <Link className="quiet-link" href="/tutor/groups">
-              그룹 만들기
+              Class 만들기
             </Link>
           </div>
         ) : null}
@@ -227,10 +219,7 @@ export function SessionBuilder() {
           <textarea
             id="learningGoal"
             name="learningGoal"
-            defaultValue={
-              selectedText?.learningGoal ||
-              "글의 핵심 관계를 맥락 스케치로 구조화하기"
-            }
+            defaultValue={selectedText?.learningGoal || "글의 핵심 관계를 맥락 스케치로 구조화하기"}
           />
         </div>
 
@@ -240,9 +229,7 @@ export function SessionBuilder() {
             <select
               id="worksheetTemplate"
               name="worksheetTemplate"
-              onChange={(event) =>
-                setWorksheetTemplate(event.target.value as WorksheetTemplateType)
-              }
+              onChange={(event) => setWorksheetTemplate(event.target.value as WorksheetTemplateType)}
               value={worksheetTemplate}
             >
               {Object.entries(templateLabels).map(([value, label]) => (

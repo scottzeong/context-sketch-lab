@@ -44,14 +44,6 @@ type TextAnalysisView = {
 type TextMode = "ai" | "manual";
 type TextSourceType = "ai_generated" | "tutor_written";
 
-const defaults = {
-  topic: "친구의 웃음소리를 오해해 발표를 멈춘 상황",
-  learningGoal: "감정 추론과 원인-결과 구조를 구분해 설명하기",
-  mustInclude: "오해\n긴장\n발표\n다시 확인하기",
-  avoid: "설교처럼 들리는 결론",
-  tone: "따뜻하고 현실적인 이야기"
-};
-
 function splitLines(value: FormDataEntryValue | null) {
   return String(value || "")
     .split("\n")
@@ -78,9 +70,9 @@ function asString(value: unknown, fallback = "") {
 }
 
 function getStatusMessage(action: string | null) {
-  if (action === "generate") return "글을 생성하는 중입니다...";
-  if (action === "analyze") return "글의 구조를 분석하는 중입니다...";
-  if (action === "save") return "Text 저장소에 저장하는 중입니다...";
+  if (action === "generate") return "글을 준비하는 중입니다.";
+  if (action === "analyze") return "글의 구조를 분석하는 중입니다.";
+  if (action === "save") return "Text 저장소에 저장하는 중입니다.";
   return null;
 }
 
@@ -127,6 +119,31 @@ export function TutorAIWorkbench() {
 
     try {
       const formData = new FormData(event.currentTarget);
+
+      if (textMode === "manual") {
+        const title = String(formData.get("manualTitle") || "").trim();
+        const body = String(formData.get("manualBody") || "").trim();
+
+        if (!body) {
+          setSaveMessage("글 입력 모드에서는 본문을 입력해 주세요.");
+          return;
+        }
+
+        setGeneratedText({
+          title: title || "튜터 입력 글",
+          body,
+          estimatedReadingLevel: String(formData.get("ageRange") || ""),
+          difficultyLevel: String(formData.get("difficultyLevel") || ""),
+          structureType: String(formData.get("textStructure") || ""),
+          tutorRevisionNotes: [],
+          safetyNotes: []
+        });
+        setTextSourceType("tutor_written");
+        setAnalysis(null);
+        setSavedTextId(null);
+        return;
+      }
+
       const json = await postJson("/api/ai/generate-text-test", {
         topic: formData.get("topic"),
         ageRange: formData.get("ageRange"),
@@ -151,36 +168,34 @@ export function TutorAIWorkbench() {
     }
   }
 
-  async function inputText(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaveMessage(null);
-
-    const formData = new FormData(event.currentTarget);
-    const title = String(formData.get("manualTitle") || "").trim();
-    const body = String(formData.get("manualBody") || "").trim();
-
-    if (!body) {
-      setSaveMessage("붙여 넣을 글 본문을 입력해 주세요.");
+  async function analyzeText() {
+    if (!generatedText || analysis) {
       return;
     }
 
-    setGeneratedText({
-      title: title || "튜터 입력 글",
-      body,
-      estimatedReadingLevel: String(formData.get("ageRange") || ""),
-      difficultyLevel: String(formData.get("difficultyLevel") || ""),
-      structureType: String(formData.get("textStructure") || ""),
-      tutorRevisionNotes: ["튜터가 직접 입력한 글입니다. 저장 후 구조 분석을 실행하세요."],
-      safetyNotes: ["수업 전 표현과 사실 관계를 최종 확인하세요."]
-    });
-    setTextSourceType("tutor_written");
-    setAnalysis(null);
-    setSavedTextId(null);
+    setBusyAction("analyze");
+    setSaveMessage(null);
+
+    try {
+      const json = await postJson("/api/ai/analyze-text-structure-test", {
+        title: generatedText.title,
+        body: generatedText.body,
+        learningGoal: "글의 핵심 구조를 파악한다.",
+        targetAgeRange: asString(generatedText.estimatedReadingLevel, "AGE_9_10")
+      });
+
+      setAnalysis(json.analysis);
+      setSaveMessage("구조 분석이 완료되었습니다. 필요하면 저장 버튼으로 Text 저장소에 반영하세요.");
+    } catch (error) {
+      setSaveMessage(error instanceof Error ? error.message : "구조 분석에 실패했습니다.");
+    } finally {
+      setBusyAction(null);
+    }
   }
 
   async function saveCurrentText() {
     if (!generatedText) {
-      setSaveMessage("먼저 글을 작성해 주세요.");
+      setSaveMessage("먼저 글을 생성하거나 입력해 주세요.");
       return;
     }
 
@@ -198,16 +213,12 @@ export function TutorAIWorkbench() {
         structureType: asString(generatedText.structureType, "narrative"),
         status: "draft",
         sourceType: textSourceType,
-        learningGoal: defaults.learningGoal,
+        learningGoal: "",
         analysisJson: analysis || undefined
       });
 
       setSavedTextId(record.id);
-      setSaveMessage(
-        analysis
-          ? "글과 구조 분석을 Text 저장소에 저장했습니다."
-          : "글을 Text 저장소에 저장했습니다. 이제 구조 분석을 실행할 수 있습니다."
-      );
+      setSaveMessage("Text 저장소에 저장했습니다.");
     } catch (error) {
       setSaveMessage(error instanceof Error ? error.message : "저장에 실패했습니다.");
     } finally {
@@ -215,67 +226,37 @@ export function TutorAIWorkbench() {
     }
   }
 
-  async function analyzeText() {
-    if (!generatedText || !savedTextId || analysis) {
-      return;
-    }
-
-    setBusyAction("analyze");
-    setSaveMessage(null);
-
-    try {
-      const json = await postJson("/api/ai/analyze-text-structure-test", {
-        title: generatedText.title,
-        body: generatedText.body,
-        learningGoal: defaults.learningGoal,
-        targetAgeRange: generatedText.estimatedReadingLevel
-      });
-
-      setAnalysis(json.analysis);
-      setSaveMessage("구조 분석이 완료되었습니다. 분석 결과를 보관하려면 다시 저장하세요.");
-    } catch (error) {
-      setSaveMessage(error instanceof Error ? error.message : "구조 분석에 실패했습니다.");
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
   return (
     <>
-      <div className="status-strip" aria-label="Workbench status">
-        <span className={generatedText ? "status done" : "status"}>글 작성</span>
-        <span className={savedTextId ? "status done" : "status"}>저장</span>
-        <span className={analysis ? "status done" : "status"}>구조 분석</span>
-        <span className="status review">세션 연결 전 튜터 확인</span>
-      </div>
-
       {statusMessage ? <p className="workbench-status">{statusMessage}</p> : null}
 
       <div className="workbench workbench-wide">
         <section className="stack">
-          <form className="panel" onSubmit={textMode === "ai" ? generateText : inputText}>
+          <form className="panel" onSubmit={generateText}>
             <div className="panel-heading">
               <div>
-                <p className="section-kicker">Step 1</p>
-                <h2>글 작성</h2>
+                <p className="section-kicker">TEXT ARCHITECTURE</p>
+                <h2>Text Setup</h2>
               </div>
               <div className="segmented-actions">
                 <button
                   className={textMode === "ai" ? "" : "secondary-button"}
-                  disabled={busyAction === "generate"}
                   onClick={() => setTextMode("ai")}
-                  type={textMode === "ai" ? "submit" : "button"}
+                  type="button"
                 >
                   <Sparkles aria-hidden="true" size={18} />
-                  {busyAction === "generate" ? "생성 중" : "글 생성"}
+                  AI Generation
                 </button>
                 <button
                   className={textMode === "manual" ? "" : "secondary-button"}
                   onClick={() => setTextMode("manual")}
-                  type={textMode === "manual" ? "submit" : "button"}
+                  type="button"
                 >
                   <BookOpenText aria-hidden="true" size={18} />
-                  글 입력
+                  Text Writing
+                </button>
+                <button disabled={busyAction === "generate"} type="submit">
+                  {busyAction === "generate" ? "생성 중" : "글생성"}
                 </button>
               </div>
             </div>
@@ -283,15 +264,16 @@ export function TutorAIWorkbench() {
             <div className="grid-two">
               <div className="field">
                 <label htmlFor="topic">주제</label>
-                <input id="topic" name="topic" defaultValue={defaults.topic} />
+                <input id="topic" name="topic" />
               </div>
               <div className="field">
                 <label htmlFor="learningGoal">학습 목표</label>
-                <input id="learningGoal" name="learningGoal" defaultValue={defaults.learningGoal} />
+                <input id="learningGoal" name="learningGoal" />
               </div>
               <div className="field">
                 <label htmlFor="ageRange">연령</label>
-                <select id="ageRange" name="ageRange" defaultValue="AGE_9_10">
+                <select id="ageRange" name="ageRange" defaultValue="">
+                  <option value="" disabled>선택</option>
                   {dropdownOptions.age_range.map((option) => (
                     <option key={option.id} value={option.value}>
                       {option.label}
@@ -301,7 +283,8 @@ export function TutorAIWorkbench() {
               </div>
               <div className="field">
                 <label htmlFor="difficultyLevel">난이도</label>
-                <select id="difficultyLevel" name="difficultyLevel" defaultValue="L3">
+                <select id="difficultyLevel" name="difficultyLevel" defaultValue="">
+                  <option value="" disabled>선택</option>
                   {dropdownOptions.difficulty_level.map((option) => (
                     <option key={option.id} value={option.value}>
                       {option.label}
@@ -311,7 +294,8 @@ export function TutorAIWorkbench() {
               </div>
               <div className="field">
                 <label htmlFor="targetLength">분량</label>
-                <select id="targetLength" name="targetLength" defaultValue="600자">
+                <select id="targetLength" name="targetLength" defaultValue="">
+                  <option value="" disabled>선택</option>
                   {dropdownOptions.target_length.map((option) => (
                     <option key={option.id} value={option.value}>
                       {option.label}
@@ -321,7 +305,8 @@ export function TutorAIWorkbench() {
               </div>
               <div className="field">
                 <label htmlFor="textStructure">글 구조</label>
-                <select id="textStructure" name="textStructure" defaultValue="cause_effect">
+                <select id="textStructure" name="textStructure" defaultValue="">
+                  <option value="" disabled>선택</option>
                   {dropdownOptions.text_structure.map((option) => (
                     <option key={option.id} value={option.value}>
                       {option.label}
@@ -338,32 +323,27 @@ export function TutorAIWorkbench() {
                 <div className="grid-two">
                   <div className="field">
                     <label htmlFor="mustInclude">포함할 요소</label>
-                    <textarea id="mustInclude" name="mustInclude" defaultValue={defaults.mustInclude} />
+                    <textarea id="mustInclude" name="mustInclude" />
                   </div>
                   <div className="field">
                     <label htmlFor="avoid">피할 요소</label>
-                    <textarea id="avoid" name="avoid" defaultValue={defaults.avoid} />
+                    <textarea id="avoid" name="avoid" />
                   </div>
                 </div>
                 <div className="field">
                   <label htmlFor="tone">톤</label>
-                  <input id="tone" name="tone" defaultValue={defaults.tone} />
+                  <input id="tone" name="tone" />
                 </div>
               </>
             ) : (
               <>
                 <div className="field">
                   <label htmlFor="manualTitle">글 제목</label>
-                  <input id="manualTitle" name="manualTitle" placeholder="붙여 넣을 글의 제목" />
+                  <input id="manualTitle" name="manualTitle" />
                 </div>
                 <div className="field">
                   <label htmlFor="manualBody">글 본문</label>
-                  <textarea
-                    className="manual-textarea"
-                    id="manualBody"
-                    name="manualBody"
-                    placeholder="튜터가 직접 작성했거나 외부에서 준비한 글을 여기에 붙여 넣으세요."
-                  />
+                  <textarea className="manual-textarea" id="manualBody" name="manualBody" />
                 </div>
               </>
             )}
@@ -374,69 +354,40 @@ export function TutorAIWorkbench() {
           <section className="panel generated-result-panel">
             <div className="panel-heading">
               <div>
-                <p className="section-kicker">Generated Text</p>
+                <p className="section-kicker">GENERATED TEXT</p>
                 <h2>{generatedText?.title || "작성된 글"}</h2>
               </div>
-              <div className="row-actions">
-                <button
-                  className="secondary-button"
-                  disabled={!generatedText || busyAction === "save"}
-                  onClick={saveCurrentText}
-                  type="button"
-                >
-                  <Save aria-hidden="true" size={17} />
-                  저장
-                </button>
-                <button
-                  disabled={!savedTextId || Boolean(analysis) || busyAction === "analyze"}
-                  onClick={analyzeText}
-                  type="button"
-                >
-                  <ListChecks aria-hidden="true" size={18} />
-                  {busyAction === "analyze" ? "분석 중" : "구조 분석"}
-                </button>
-              </div>
+              <button
+                disabled={!generatedText || Boolean(analysis) || busyAction === "analyze"}
+                onClick={analyzeText}
+                type="button"
+              >
+                <ListChecks aria-hidden="true" size={18} />
+                {busyAction === "analyze" ? "분석 중" : "구조분석"}
+              </button>
             </div>
 
             {generatedText ? (
               <>
                 <div className="metadata-grid compact workbench-meta">
-                  <span>{generatedText.estimatedReadingLevel}</span>
-                  <span>{generatedText.difficultyLevel}</span>
-                  <span>{generatedText.structureType}</span>
+                  <span>{generatedText.estimatedReadingLevel || "연령 미지정"}</span>
+                  <span>{generatedText.difficultyLevel || "난이도 미지정"}</span>
+                  <span>{generatedText.structureType || "구조 미지정"}</span>
                   <span>{textSourceType === "ai_generated" ? "AI draft" : "Tutor input"}</span>
                 </div>
                 <article className="generated-text-body">{generatedText.body}</article>
-                <div className="insight-grid">
-                  <article>
-                    <h3>튜터 수정 메모</h3>
-                    <ul>
-                      {(generatedText.tutorRevisionNotes || []).map((note) => (
-                        <li key={note}>{note}</li>
-                      ))}
-                    </ul>
-                  </article>
-                  <article>
-                    <h3>안전/표현 점검</h3>
-                    <ul>
-                      {(generatedText.safetyNotes || []).map((note) => (
-                        <li key={note}>{note}</li>
-                      ))}
-                    </ul>
-                  </article>
-                </div>
               </>
             ) : (
               <div className="empty-inline">
                 <BookOpenText aria-hidden="true" size={24} />
                 <strong>아직 작성된 글이 없습니다.</strong>
-                <p>왼쪽에서 AI로 생성하거나 튜터가 직접 글을 입력하세요.</p>
+                <p>왼쪽에서 AI Generation 또는 Text Writing을 선택한 뒤 글생성을 누르세요.</p>
               </div>
             )}
 
             {saveMessage ? (
               <p className="save-message">
-                {saveMessage} <Link href="/tutor/texts">저장소 보기</Link>
+                {saveMessage} {savedTextId ? <Link href="/tutor/texts">저장소 보기</Link> : null}
               </p>
             ) : null}
           </section>
@@ -444,10 +395,18 @@ export function TutorAIWorkbench() {
           <section className="panel readable-analysis-panel">
             <div className="panel-heading">
               <div>
-                <p className="section-kicker">Structure Analysis</p>
+                <p className="section-kicker">STRUCTURE ANALYSIS</p>
                 <h2>구조 분석 결과</h2>
               </div>
-              <span className={analysis ? "status done" : "status"}>analysis</span>
+              <button
+                className="secondary-button"
+                disabled={!generatedText || busyAction === "save"}
+                onClick={saveCurrentText}
+                type="button"
+              >
+                <Save aria-hidden="true" size={17} />
+                {busyAction === "save" ? "저장 중" : "저장"}
+              </button>
             </div>
 
             {analysis ? (
@@ -515,8 +474,8 @@ export function TutorAIWorkbench() {
             ) : (
               <div className="empty-inline">
                 <CheckCircle2 aria-hidden="true" size={24} />
-                <strong>저장 후 구조 분석을 실행할 수 있습니다.</strong>
-                <p>글을 먼저 Text 저장소에 저장하면 구조 분석 버튼이 활성화됩니다.</p>
+                <strong>구조 분석을 실행하면 결과가 여기에 표시됩니다.</strong>
+                <p>Generated Text 박스의 구조분석 버튼은 글이 준비되면 활성화됩니다.</p>
               </div>
             )}
           </section>

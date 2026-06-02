@@ -14,7 +14,7 @@ const metrics = [
   { label: "진행 중 세션", value: "4", detail: "오늘 검토 2건", tone: "green" },
   { label: "승인 대기", value: "7", detail: "피드백 초안 포함", tone: "amber" },
   { label: "이번 주 글 작성", value: "12", detail: "구조 분석 9건", tone: "blue" },
-  { label: "활동 학생", value: "38", detail: "3개 그룹", tone: "neutral" }
+  { label: "활동 학생", value: "38", detail: "3개 Class", tone: "neutral" }
 ];
 
 const reviewQueue = [

@@ -33,7 +33,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
       setSelectedId((current) => current || nextGroups[0]?.id || null);
       setMessage(null);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "그룹을 불러오지 못했습니다.");
+      setMessage(error instanceof Error ? error.message : "Class 목록을 불러오지 못했습니다.");
     }
   }
 
@@ -61,15 +61,13 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
   const selectedGroup =
     groups.find((group) => group.id === selectedId) || filteredGroups[0] || null;
   const availableStudents = selectedGroup
-    ? students.filter(
-        (student) => !selectedGroup.students.some((member) => member.id === student.id)
-      )
+    ? students.filter((student) => !selectedGroup.students.some((member) => member.id === student.id))
     : students;
 
   async function saveGroup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (readOnly) {
-      setMessage("관리자는 그룹을 참조만 할 수 있습니다.");
+      setMessage("관리자는 Class를 참조만 할 수 있습니다.");
       return;
     }
 
@@ -85,10 +83,10 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
         ageRange: String(formData.get("ageRange") || "")
       });
       setSelectedId(saved.id);
-      setMessage("그룹을 저장했습니다.");
+      setMessage("Class를 저장했습니다.");
       await refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "그룹 저장에 실패했습니다.");
+      setMessage(error instanceof Error ? error.message : "Class 저장에 실패했습니다.");
     } finally {
       setIsSaving(false);
     }
@@ -100,7 +98,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
     }
     setSelectedId(null);
     setDeleteConfirm("");
-    setMessage("새 그룹 정보를 입력한 뒤 저장하세요.");
+    setMessage("새 Class 정보를 입력한 뒤 저장하세요.");
   }
 
   async function removeGroup() {
@@ -116,7 +114,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
     await deleteLearningGroup(selectedGroup.id);
     setSelectedId(null);
     setDeleteConfirm("");
-    setMessage("그룹을 삭제했습니다.");
+    setMessage("Class를 삭제했습니다.");
     await refresh();
   }
 
@@ -143,12 +141,12 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
       <section className="panel groups-list">
         <div className="panel-heading">
           <div>
-            <p className="section-kicker">Groups</p>
-            <h2>수업 그룹</h2>
+            <p className="section-kicker">Classes</p>
+            <h2>수업 Class</h2>
           </div>
           {!readOnly ? (
             <button className="secondary-button" onClick={createNewGroup} type="button">
-              <Plus aria-hidden="true" size={17} />새 그룹
+              <Plus aria-hidden="true" size={17} />새 Class
             </button>
           ) : null}
         </div>
@@ -160,7 +158,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
           <input
             id="group-search"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="그룹명, 연령대 검색"
+            placeholder="Class명, 연령대 검색"
             value={query}
           />
         </label>
@@ -188,11 +186,11 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
             ))
           ) : (
             <div className="empty-inline">
-              <strong>아직 그룹이 없습니다.</strong>
+              <strong>아직 Class가 없습니다.</strong>
               <p>
                 {readOnly
-                  ? "튜터가 생성한 그룹이 생기면 여기에 표시됩니다."
-                  : "새 그룹을 만들고 학생을 배정하세요."}
+                  ? "튜터가 생성한 Class가 생기면 여기에 표시됩니다."
+                  : "새 Class를 만들고 학생을 배정하세요."}
               </p>
             </div>
           )}
@@ -203,8 +201,8 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
         <form key={selectedGroup?.id || "new"} onSubmit={saveGroup}>
           <div className="panel-heading">
             <div>
-              <p className="section-kicker">Group Detail</p>
-              <h2>{selectedGroup?.name || "새 그룹"}</h2>
+              <p className="section-kicker">Class Detail</p>
+              <h2>{selectedGroup?.name || "새 Class"}</h2>
             </div>
             <div className="row-actions">
               {selectedGroup ? (
@@ -238,7 +236,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
 
           <div className="grid-two">
             <div className="field">
-              <label htmlFor="name">그룹명</label>
+              <label htmlFor="name">Class명</label>
               <input
                 id="name"
                 name="name"
@@ -264,7 +262,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
               id="description"
               name="description"
               defaultValue={selectedGroup?.description || ""}
-              placeholder="그룹의 수업 목표나 운영 메모를 적습니다."
+              placeholder="Class의 수업 목표나 운영 메모를 적습니다."
               readOnly={readOnly}
             />
           </div>
@@ -325,7 +323,7 @@ export function GroupManager({ readOnly = false }: { readOnly?: boolean }) {
                   <p>
                     {readOnly
                       ? "튜터가 학생을 배정하면 목록에 표시됩니다."
-                      : "학생 선택창에서 학생을 그룹에 추가하세요."}
+                      : "학생 선택창에서 학생을 Class에 추가하세요."}
                   </p>
                 </div>
               )}

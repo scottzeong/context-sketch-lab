@@ -2,6 +2,7 @@
 
 import { BookOpenText, CheckCircle2, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { getConfigOptions, ConfigOptionRecord } from "@/lib/configOptions";
 import { deleteStoredText, getStoredTexts, StoredTextRecord } from "@/lib/textRepository";
 
 const statusLabels: Record<StoredTextRecord["status"], string> = {
@@ -12,6 +13,7 @@ const statusLabels: Record<StoredTextRecord["status"], string> = {
 
 type StructureAnalysisView = {
   summary?: string;
+  mainIdea?: string;
   structureType?: string;
   coreStructure?: {
     beginning?: string;
@@ -20,11 +22,22 @@ type StructureAnalysisView = {
     keyIdea?: string;
   };
   logicalFlow?: string[];
+  paragraphs?: Array<{
+    index?: number;
+    role?: string;
+    summary?: string;
+    keyDetails?: string[];
+  }>;
   keyRelations?: Array<{
     type?: string;
     description?: string;
+    from?: string;
+    to?: string;
+    relationType?: string;
+    explanation?: string;
   }>;
   tutorQuestions?: string[];
+  discussionQuestions?: string[];
   worksheetSuggestions?: string[];
 };
 
@@ -43,18 +56,33 @@ function uniqueValues(texts: StoredTextRecord[], key: keyof StoredTextRecord) {
   );
 }
 
+function optionLabel(options: ConfigOptionRecord[], category: ConfigOptionRecord["category"], value?: string) {
+  if (!value) {
+    return "미지정";
+  }
+
+  return options.find((option) => option.category === category && option.value === value)?.label || value;
+}
+
 function renderAnalysis(analysisJson: unknown) {
   if (!analysisJson || typeof analysisJson !== "object") {
     return (
       <div className="empty-inline">
         <strong>아직 저장된 구조 분석이 없습니다.</strong>
-        <p>튜터 Workbench에서 구조 분석을 실행하고 저장하면 여기에 표시됩니다.</p>
+        <p>Workbench에서 구조 분석을 실행하고 저장하면 여기에 표시됩니다.</p>
       </div>
     );
   }
 
   const analysis = analysisJson as StructureAnalysisView;
   const core = analysis.coreStructure || {};
+  const flow =
+    analysis.logicalFlow ||
+    analysis.paragraphs?.map((paragraph) =>
+      [paragraph.role, paragraph.summary].filter(Boolean).join(": ")
+    ) ||
+    [];
+  const questions = analysis.tutorQuestions || analysis.discussionQuestions || [];
 
   return (
     <div className="analysis-readable">
@@ -68,21 +96,22 @@ function renderAnalysis(analysisJson: unknown) {
       <article>
         <h4>핵심 구조</h4>
         <div className="analysis-list">
+          {analysis.mainIdea ? <p><strong>핵심 생각</strong>{analysis.mainIdea}</p> : null}
           {core.beginning ? <p><strong>도입</strong>{core.beginning}</p> : null}
           {core.middle ? <p><strong>전개</strong>{core.middle}</p> : null}
           {core.end ? <p><strong>마무리</strong>{core.end}</p> : null}
           {core.keyIdea ? <p><strong>핵심 생각</strong>{core.keyIdea}</p> : null}
-          {!core.beginning && !core.middle && !core.end && !core.keyIdea ? (
+          {!analysis.mainIdea && !core.beginning && !core.middle && !core.end && !core.keyIdea ? (
             <p>{analysis.structureType || "구조 분석 데이터가 간단한 형태로 저장되어 있습니다."}</p>
           ) : null}
         </div>
       </article>
 
-      {analysis.logicalFlow?.length ? (
+      {flow.length ? (
         <article>
           <h4>전개 흐름</h4>
           <ol>
-            {analysis.logicalFlow.map((item, index) => (
+            {flow.map((item, index) => (
               <li key={`${item}-${index}`}>{item}</li>
             ))}
           </ol>
@@ -94,20 +123,20 @@ function renderAnalysis(analysisJson: unknown) {
           <h4>핵심 관계</h4>
           <div className="analysis-list">
             {analysis.keyRelations.map((relation, index) => (
-              <p key={`${relation.type || "relation"}-${index}`}>
-                <strong>{relation.type || "관계"}</strong>
-                {relation.description || ""}
+              <p key={`${relation.type || relation.from || "relation"}-${index}`}>
+                <strong>{relation.type || relation.relationType || "관계"}</strong>
+                {relation.description || relation.explanation || [relation.from, relation.to].filter(Boolean).join(" - ")}
               </p>
             ))}
           </div>
         </article>
       ) : null}
 
-      {analysis.tutorQuestions?.length ? (
+      {questions.length ? (
         <article>
           <h4>질문 후보</h4>
           <ul>
-            {analysis.tutorQuestions.map((question, index) => (
+            {questions.map((question, index) => (
               <li key={`${question}-${index}`}>{question}</li>
             ))}
           </ul>
@@ -130,6 +159,7 @@ function renderAnalysis(analysisJson: unknown) {
 
 export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
   const [texts, setTexts] = useState<StoredTextRecord[]>([]);
+  const [configOptions, setConfigOptions] = useState<ConfigOptionRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -139,8 +169,9 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
 
   async function refresh() {
     try {
-      const nextTexts = await getStoredTexts();
+      const [nextTexts, nextOptions] = await Promise.all([getStoredTexts(), getConfigOptions()]);
       setTexts(nextTexts);
+      setConfigOptions(nextOptions);
       setSelectedId((current) => current || nextTexts[0]?.id || null);
       setMessage(null);
     } catch (error) {
@@ -172,9 +203,9 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
           item.title,
           item.body,
           item.learningGoal,
-          item.structureType,
-          item.difficultyLevel,
-          item.ageRange,
+          optionLabel(configOptions, "text_structure", item.structureType),
+          optionLabel(configOptions, "difficulty_level", item.difficultyLevel),
+          optionLabel(configOptions, "age_range", item.ageRange),
           item.textType
         ]
           .filter(Boolean)
@@ -182,13 +213,17 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
 
       return matchesStatus && matchesStructure && matchesDifficulty && matchesQuery;
     });
-  }, [difficultyFilter, query, statusFilter, structureFilter, texts]);
+  }, [configOptions, difficultyFilter, query, statusFilter, structureFilter, texts]);
 
   const selectedText = texts.find((item) => item.id === selectedId) || filteredTexts[0] || null;
 
   async function removeText(id: string) {
     if (readOnly) {
       setMessage("관리자는 텍스트를 참조만 할 수 있습니다.");
+      return;
+    }
+
+    if (!window.confirm("이 글을 삭제할까요? 삭제 후에는 되돌릴 수 없습니다.")) {
       return;
     }
 
@@ -250,7 +285,7 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
               <option value="all">전체</option>
               {structureOptions.map((structure) => (
                 <option key={structure} value={structure}>
-                  {structure}
+                  {optionLabel(configOptions, "text_structure", structure)}
                 </option>
               ))}
             </select>
@@ -265,7 +300,7 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
               <option value="all">전체</option>
               {difficultyOptions.map((difficulty) => (
                 <option key={difficulty} value={difficulty}>
-                  {difficulty}
+                  {optionLabel(configOptions, "difficulty_level", difficulty)}
                 </option>
               ))}
             </select>
@@ -284,8 +319,9 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
                 <span>
                   <strong>{item.title}</strong>
                   <small>
-                    {item.structureType || "구조 미지정"} |{" "}
-                    {item.difficultyLevel || "난이도 미지정"} | {formatDate(item.updatedAt)}
+                    {optionLabel(configOptions, "text_structure", item.structureType)} |{" "}
+                    {optionLabel(configOptions, "difficulty_level", item.difficultyLevel)} |{" "}
+                    {formatDate(item.updatedAt)}
                   </small>
                 </span>
                 <BookOpenText aria-hidden="true" size={18} />
@@ -324,9 +360,9 @@ export function TextRepository({ readOnly = false }: { readOnly?: boolean }) {
             </div>
 
             <div className="metadata-grid">
-              <span>연령: {selectedText.ageRange || "미지정"}</span>
-              <span>난이도: {selectedText.difficultyLevel || "미지정"}</span>
-              <span>구조: {selectedText.structureType || "미지정"}</span>
+              <span>연령: {optionLabel(configOptions, "age_range", selectedText.ageRange)}</span>
+              <span>난이도: {optionLabel(configOptions, "difficulty_level", selectedText.difficultyLevel)}</span>
+              <span>구조: {optionLabel(configOptions, "text_structure", selectedText.structureType)}</span>
               <span>수정: {formatDate(selectedText.updatedAt)}</span>
             </div>
 

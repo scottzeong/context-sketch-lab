@@ -121,7 +121,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
       const duplicated = await duplicateStoredSession(selectedSession);
       await refresh();
       setSelectedId(duplicated.id);
-      setMessage("세션을 초안 상태로 복제했습니다. 그룹과 일정을 확인한 뒤 공개하세요.");
+      setMessage("세션을 초안 상태로 복제했습니다. Class와 일정을 확인한 뒤 공개하세요.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "세션 복제에 실패했습니다.");
     } finally {
@@ -156,21 +156,21 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
           <input
             id="session-search"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="제목, 글, 그룹, 목표 검색"
+            placeholder="제목, 글, Class, 목표 검색"
             value={query}
           />
         </label>
 
         <div className="grid-two compact-filter-grid">
           <div className="field">
-            <label htmlFor="session-group-filter">그룹</label>
+            <label htmlFor="session-group-filter">Class</label>
             <select
               id="session-group-filter"
               onChange={(event) => setGroupFilter(event.target.value)}
               value={groupFilter}
             >
               <option value="all">전체</option>
-              <option value="ungrouped">그룹 없는 세션</option>
+              <option value="ungrouped">Class 없는 세션</option>
               {groups.map((group) => (
                 <option key={group.id} value={group.id}>
                   {group.name}
@@ -232,7 +232,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
           ) : (
             <div className="empty-inline">
               <strong>조건에 맞는 세션이 없습니다.</strong>
-              <p>검색어, 그룹, 상태, 튜터 필터를 조정해 보세요.</p>
+              <p>검색어, Class, 상태, 튜터 필터를 조정해 보세요.</p>
             </div>
           )}
         </div>
@@ -274,7 +274,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
 
             <div className="metadata-grid">
               <span>글: {selectedSession.textTitle}</span>
-              <span>그룹: {selectedSession.groupName || "전체 학생"}</span>
+              <span>Class: {selectedSession.groupName || "전체 학생"}</span>
               <span>튜터: {selectedSession.createdBy || "미지정"}</span>
               <span>활동지: {selectedSession.worksheetTemplate}</span>
               <span>
@@ -295,7 +295,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
               </div>
               <div>
                 <strong>학생 화면</strong>
-                <p>공개 상태가 되면 배정 그룹의 학생에게 표시됩니다.</p>
+                <p>공개 상태가 되면 배정 Class의 학생에게 표시됩니다.</p>
               </div>
               <div>
                 <strong>관리자 보기</strong>
@@ -306,7 +306,7 @@ export function SessionRepository({ readOnly = false }: { readOnly?: boolean }) 
         ) : (
           <div className="empty-state">
             <strong>선택된 세션이 없습니다.</strong>
-            <p>새 세션을 만들면 여기에서 상태와 그룹을 관리할 수 있습니다.</p>
+            <p>새 세션을 만들면 여기에서 상태와 Class를 관리할 수 있습니다.</p>
             {!readOnly ? (
               <Link className="primary-link" href="/tutor/sessions/new">
                 세션 만들기
