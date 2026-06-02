@@ -1,4 +1,5 @@
 import { FolderOpen, Home, LibraryBig } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { UserAccountSummary } from "@/components/UserAccountSummary";
@@ -20,7 +21,9 @@ export async function ParentShell({
     <div className="student-shell">
       <header className="student-topbar">
         <Link className="student-brand" href="/parent/dashboard">
-          <span className="brand-mark">CS</span>
+          <span className="brand-mark">
+            <Image src="/brand/logo-mark.svg" alt="" width={38} height={38} priority />
+          </span>
           <span>
             <strong>SketchFlow</strong>
             <small>Parent</small>

@@ -1,5 +1,6 @@
 import { LoginForm } from "@/components/LoginForm";
 import { hasPublicSupabaseEnv } from "@/lib/env";
+import Image from "next/image";
 
 export default function LoginPage() {
   const isConfigured = hasPublicSupabaseEnv();
@@ -7,6 +8,9 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <section className="auth-panel">
+        <div className="auth-logo">
+          <Image src="/brand/logo-horizontal.svg" alt="Roterfaden" width={104} height={54} priority />
+        </div>
         <div>
           <p className="eyebrow">SketchFlow Access</p>
           <h1>로그인</h1>

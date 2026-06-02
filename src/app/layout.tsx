@@ -2,8 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://roterfaden.kr"),
   title: "Context Sketch Lab",
-  description: "Phase 0 nonverbal sketch analysis spike"
+  description: "SketchFlow reading, sketching, feedback, and portfolio workspace",
+  icons: {
+    icon: "/brand/favicon.svg",
+    apple: "/brand/icon-192.png"
+  },
+  openGraph: {
+    title: "Context Sketch Lab",
+    description: "SketchFlow reading, sketching, feedback, and portfolio workspace",
+    images: ["/brand/og-image.png"]
+  }
 };
 
 export default function RootLayout({

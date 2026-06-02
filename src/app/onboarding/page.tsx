@@ -1,9 +1,13 @@
 import { OnboardingProfileForm } from "@/components/OnboardingProfileForm";
+import Image from "next/image";
 
 export default function OnboardingPage() {
   return (
     <main className="auth-page onboarding-page">
       <div className="auth-panel onboarding-shell">
+        <div className="auth-logo">
+          <Image src="/brand/logo-horizontal.svg" alt="Roterfaden" width={104} height={54} priority />
+        </div>
         <div>
           <p className="eyebrow">SketchFlow Setup</p>
           <h1>프로필 설정</h1>
