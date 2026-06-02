@@ -2254,6 +2254,8 @@ p {
 .front-page {
   align-items: center;
   display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   min-height: 100vh;
   padding: 28px;
 }
@@ -2299,6 +2301,11 @@ p {
   flex-wrap: wrap;
   gap: 14px;
   margin-top: 28px;
+}
+
+.front-login-panel {
+  align-self: center;
+  max-width: 420px;
 }
 
 .manual-page {
@@ -2434,7 +2441,8 @@ pre {
   .review-submission-grid,
   .submission-review-grid,
   .feedback-draft-grid,
-  .workbench {
+  .workbench,
+  .front-page {
     grid-template-columns: 1fr;
   }
 
