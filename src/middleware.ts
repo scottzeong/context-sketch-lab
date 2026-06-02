@@ -5,7 +5,7 @@ import type { Database, UserRole } from "@/lib/supabase/database.types";
 const protectedPrefixes = ["/tutor", "/student", "/admin", "/parent", "/onboarding"];
 
 const roleHome: Record<UserRole, string> = {
-  admin: "/tutor/dashboard",
+  admin: "/admin/users",
   tutor: "/tutor/dashboard",
   student: "/student/dashboard",
   parent: "/parent/dashboard"

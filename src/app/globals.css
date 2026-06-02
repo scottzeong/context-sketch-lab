@@ -97,7 +97,7 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 256px minmax(0, 1fr);
+  grid-template-columns: 276px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -115,9 +115,9 @@ button:disabled {
 .brand {
   align-items: center;
   display: flex;
-  gap: 10px;
+  gap: 13px;
   margin-bottom: 22px;
-  padding: 8px;
+  padding: 10px 8px;
 }
 
 .brand-mark {
@@ -126,11 +126,11 @@ button:disabled {
   border-radius: 8px;
   display: inline-flex;
   flex: 0 0 auto;
-  height: 38px;
+  height: 49px;
   justify-content: center;
   overflow: hidden;
   padding: 3px;
-  width: 38px;
+  width: 49px;
 }
 
 .brand-mark img {
@@ -145,9 +145,13 @@ button:disabled {
   display: block;
 }
 
+.brand strong {
+  font-size: 1.3rem;
+}
+
 .brand small {
   color: #d3d8dd;
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   margin-top: 2px;
 }
 
@@ -161,9 +165,9 @@ button:disabled {
   border-radius: 7px;
   color: #e5e9ec;
   display: flex;
-  font-size: 0.72rem;
+  font-size: 1.15rem;
   gap: 10px;
-  padding: 10px;
+  padding: 11px 10px;
 }
 
 .nav-item:hover {
@@ -199,7 +203,7 @@ button:disabled {
   background: rgba(244, 246, 248, 0.08);
   border-color: rgba(233, 236, 240, 0.16);
   color: #f7f3e5;
-  margin-top: 12px;
+  margin-top: auto;
 }
 
 .student-topbar .user-summary {
@@ -1446,6 +1450,10 @@ button:disabled {
   margin-bottom: 22px;
 }
 
+.topbar h1 {
+  font-size: clamp(1.4rem, 2.8vw, 2.45rem);
+}
+
 .topbar-copy {
   max-width: 760px;
 }
@@ -1483,6 +1491,7 @@ button:disabled {
 
 .primary-link:hover {
   background: var(--accent-strong);
+  color: #fff;
 }
 
 .quiet-link {
@@ -2157,7 +2166,7 @@ p {
 }
 
 .front-hero h1 {
-  font-size: clamp(2.4rem, 7vw, 5.4rem);
+  font-size: clamp(1.7rem, 4.9vw, 3.8rem);
   line-height: 1.03;
   max-width: 880px;
 }
@@ -2187,6 +2196,11 @@ p {
   display: grid;
   gap: 12px;
   margin-bottom: 22px;
+}
+
+.manual-hero h1,
+.auth-panel h1 {
+  font-size: clamp(1.4rem, 2.8vw, 2.45rem);
 }
 
 .manual-grid {

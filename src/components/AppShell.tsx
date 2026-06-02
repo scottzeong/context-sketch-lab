@@ -2,7 +2,6 @@ import {
   BarChart3,
   BookOpenText,
   ClipboardCheck,
-  FileText,
   LayoutDashboard,
   LibraryBig,
   Settings,
@@ -25,7 +24,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { href: "/tutor/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "tutor"] },
+  { href: "/tutor/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["tutor"] },
   { href: "/tutor/workbench", label: "AI Workbench", icon: Sparkles, roles: ["admin", "tutor"] },
   { href: "/tutor/groups", label: "Groups", icon: Users, roles: ["admin", "tutor"] },
   { href: "/tutor/texts", label: "Texts", icon: BookOpenText, roles: ["admin", "tutor"] },
@@ -43,7 +42,7 @@ const workspaceLabel: Record<UserRole, string> = {
 };
 
 const workspaceHome: Record<UserRole, string> = {
-  admin: "/tutor/dashboard",
+  admin: "/admin/users",
   tutor: "/tutor/dashboard",
   student: "/student/dashboard",
   parent: "/parent/dashboard"
@@ -100,10 +99,6 @@ export async function AppShell({
           })}
         </nav>
 
-        <div className="sidebar-footer">
-          <FileText aria-hidden="true" size={18} />
-          <span>v1 planning build</span>
-        </div>
         <UserAccountSummary compact />
       </aside>
 

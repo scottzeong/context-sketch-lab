@@ -12,8 +12,7 @@ const createUserSchema = z.object({
   ageRange: z
     .enum(["AGE_7_8", "AGE_9_10", "AGE_11_12", "AGE_13_15", "AGE_16_18", "ADULT"])
     .optional()
-    .or(z.literal("")),
-  readingLevel: z.string().optional()
+    .or(z.literal(""))
 });
 
 export async function POST(request: Request) {
@@ -63,8 +62,7 @@ export async function POST(request: Request) {
           role: payload.role,
           display_name: payload.displayName,
           organization_id: adminProfile.organization_id,
-          age_range: payload.ageRange || null,
-          reading_level: payload.readingLevel || null
+          age_range: payload.ageRange || null
         }
       });
 
@@ -82,7 +80,6 @@ export async function POST(request: Request) {
       role: payload.role as UserRole,
       organization_id: adminProfile.organization_id,
       age_range: (payload.ageRange || null) as AgeRange | null,
-      reading_level: payload.readingLevel || null,
       account_status: "active",
       updated_at: new Date().toISOString()
     });

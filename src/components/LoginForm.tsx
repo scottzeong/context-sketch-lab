@@ -38,7 +38,7 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, display_name, age_range, reading_level, account_status")
+        .select("role, display_name, age_range, account_status")
         .single();
 
       if (profile?.account_status === "disabled") {
@@ -48,15 +48,14 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
       }
 
       const roleHome = {
-        admin: "/tutor/dashboard",
+        admin: "/admin/users",
         tutor: "/tutor/dashboard",
         student: "/student/dashboard",
         parent: "/parent/dashboard"
       } as const;
 
       const needsOnboarding =
-        !profile?.display_name ||
-        (profile.role === "student" && (!profile.age_range || !profile.reading_level));
+        !profile?.display_name || (profile.role === "student" && !profile.age_range);
 
       window.location.href = needsOnboarding
         ? "/onboarding"

@@ -98,7 +98,6 @@ export async function updateManagedProfile(
       role: updates.role,
       display_name: updates.displayName || null,
       age_range: updates.ageRange || null,
-      reading_level: updates.readingLevel || null,
       account_status: updates.accountStatus || undefined,
       updated_at: new Date().toISOString()
     })

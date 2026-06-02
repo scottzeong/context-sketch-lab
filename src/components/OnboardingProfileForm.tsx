@@ -20,7 +20,7 @@ const ageRangeLabels: Record<AgeRange, string> = {
 };
 
 const roleHome: Record<string, string> = {
-  admin: "/tutor/dashboard",
+  admin: "/admin/users",
   tutor: "/tutor/dashboard",
   student: "/student/dashboard",
   parent: "/parent/dashboard"
@@ -45,9 +45,7 @@ export function OnboardingProfileForm() {
       try {
         setProfile(await getOnboardingProfile());
       } catch (error) {
-        setMessage(
-          error instanceof Error ? error.message : "프로필을 불러오지 못했습니다."
-        );
+        setMessage(error instanceof Error ? error.message : "프로필을 불러오지 못했습니다.");
       }
     }
 
@@ -71,8 +69,7 @@ export function OnboardingProfileForm() {
       const formData = new FormData(event.currentTarget);
       const saved = await updateOwnOnboardingProfile({
         displayName: String(formData.get("displayName") || ""),
-        ageRange: String(formData.get("ageRange") || "") as AgeRange | "",
-        readingLevel: String(formData.get("readingLevel") || "")
+        ageRange: String(formData.get("ageRange") || "") as AgeRange | ""
       });
       setProfile(saved);
       setMessage("프로필을 저장했습니다.");
@@ -105,9 +102,7 @@ export function OnboardingProfileForm() {
       event.currentTarget.reset();
       setPasswordMessage("비밀번호를 변경했습니다.");
     } catch (error) {
-      setPasswordMessage(
-        error instanceof Error ? error.message : "비밀번호 변경에 실패했습니다."
-      );
+      setPasswordMessage(error instanceof Error ? error.message : "비밀번호 변경에 실패했습니다.");
     } finally {
       setIsUpdatingPassword(false);
     }
@@ -129,7 +124,7 @@ export function OnboardingProfileForm() {
       <div className="panel-heading">
         <div>
           <p className="section-kicker">Onboarding</p>
-          <h2>내 프로필 확인</h2>
+          <h2>계정 정보 확인</h2>
         </div>
         <span className="status done">
           <CheckCircle2 aria-hidden="true" size={14} />
@@ -157,7 +152,7 @@ export function OnboardingProfileForm() {
             <input id="displayName" name="displayName" defaultValue={profile.displayName} />
           </div>
           <div className="field">
-            <label htmlFor="ageRange">연령대</label>
+            <label htmlFor="ageRange">학습 연령대</label>
             <select id="ageRange" name="ageRange" defaultValue={profile.ageRange || ""}>
               <option value="">미설정</option>
               {(Object.keys(ageRangeLabels) as AgeRange[]).map((ageRange) => (
@@ -167,15 +162,6 @@ export function OnboardingProfileForm() {
               ))}
             </select>
           </div>
-          <div className="field">
-            <label htmlFor="readingLevel">읽기 수준</label>
-            <input
-              id="readingLevel"
-              name="readingLevel"
-              defaultValue={profile.readingLevel || ""}
-              placeholder="예: 초등 중급, 독해 A"
-            />
-          </div>
         </div>
 
         <div className="row-actions">
@@ -184,7 +170,7 @@ export function OnboardingProfileForm() {
             {isSaving ? "저장 중" : "프로필 저장"}
           </button>
           <a className="primary-link" href={nextHref}>
-            내 작업 공간으로 이동
+            내 작업공간으로 이동
           </a>
         </div>
       </form>

@@ -29,7 +29,6 @@ export async function getOnboardingProfile(): Promise<OnboardingProfile> {
 export async function updateOwnOnboardingProfile(input: {
   displayName: string;
   ageRange?: AgeRange | "";
-  readingLevel?: string;
 }) {
   const supabase = createSupabaseBrowserClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -43,7 +42,6 @@ export async function updateOwnOnboardingProfile(input: {
     .update({
       display_name: input.displayName || null,
       age_range: input.ageRange || null,
-      reading_level: input.readingLevel || null,
       updated_at: new Date().toISOString()
     })
     .eq("id", authData.user.id)

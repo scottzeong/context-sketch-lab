@@ -9,15 +9,12 @@ export default function LoginPage() {
     <main className="auth-page">
       <section className="auth-panel">
         <div className="auth-logo">
-          <Image src="/brand/logo-horizontal.svg" alt="Roterfaden" width={104} height={54} priority />
+          <Image src="/brand/logo-horizontal.svg" alt="Roter Faden" width={104} height={54} priority />
         </div>
         <div>
           <p className="eyebrow">Roter Faden Access</p>
           <h1>로그인</h1>
-          <p>
-            Supabase Auth로 로그인하면 역할에 따라 튜터, 학생, 보호자, 관리자 작업
-            공간으로 이동합니다.
-          </p>
+          <p>역할에 따라 튜터, 학생, 보호자, 관리자 작업 공간으로 이동합니다.</p>
         </div>
 
         {!isConfigured ? (
@@ -35,4 +32,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
