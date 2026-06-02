@@ -33,7 +33,10 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
     try {
       const formData = new FormData(event.currentTarget);
       const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        data: { user },
+        error
+      } = await supabase.auth.signInWithPassword({
         email: String(formData.get("email") || ""),
         password: String(formData.get("password") || "")
       });
@@ -43,18 +46,29 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
         return;
       }
 
-      const { data: profile } = await supabase
+      if (!user) {
+        setMessage("로그인 사용자 정보를 확인하지 못했습니다.");
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("role, account_status")
+        .eq("id", user.id)
         .single();
 
-      if (profile?.account_status === "disabled") {
+      if (profileError || !profile) {
+        setMessage("사용자 프로필을 찾지 못했습니다. 관리자에게 문의해 주세요.");
+        return;
+      }
+
+      if (profile.account_status === "disabled") {
         await supabase.auth.signOut();
         setMessage("비활성화된 계정입니다. 관리자에게 문의해 주세요.");
         return;
       }
 
-      window.location.href = profile?.role ? roleHome[profile.role] : "/student/dashboard";
+      window.location.href = roleHome[profile.role];
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "로그인에 실패했습니다.");
     } finally {
