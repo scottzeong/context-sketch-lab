@@ -8,6 +8,13 @@ type LoginFormProps = {
   isConfigured: boolean;
 };
 
+const roleHome = {
+  admin: "/admin/users",
+  tutor: "/tutor/dashboard",
+  student: "/student/dashboard",
+  parent: "/parent/dashboard"
+} as const;
+
 export function LoginForm({ isConfigured }: LoginFormProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +45,7 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, display_name, age_range, account_status")
+        .select("role, account_status")
         .single();
 
       if (profile?.account_status === "disabled") {
@@ -47,20 +54,7 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
         return;
       }
 
-      const roleHome = {
-        admin: "/admin/users",
-        tutor: "/tutor/dashboard",
-        student: "/student/dashboard",
-        parent: "/parent/dashboard"
-      } as const;
-
-      const needsOnboarding = !profile?.display_name;
-
-      window.location.href = needsOnboarding
-        ? "/onboarding"
-        : profile?.role
-          ? roleHome[profile.role]
-          : "/onboarding";
+      window.location.href = profile?.role ? roleHome[profile.role] : "/student/dashboard";
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "로그인에 실패했습니다.");
     } finally {

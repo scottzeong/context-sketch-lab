@@ -33,6 +33,10 @@ function parseWeights(value?: string) {
   }
 }
 
+function stringifyWeights(weights: Record<string, number>) {
+  return JSON.stringify(weights);
+}
+
 export function AdminConfigOptions() {
   const [options, setOptions] = useState<EditableOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ConfigOptionCategory>("age_range");
@@ -124,11 +128,22 @@ export function AdminConfigOptions() {
 
   function updateWeight(option: EditableOption, axisValue: string, nextWeight: string) {
     const weights = parseWeights(option.promptText);
+
+    if (nextWeight === "") {
+      delete weights[axisValue];
+      updateLocal(option.id, { promptText: stringifyWeights(weights) });
+      return;
+    }
+
     const numeric = Number(nextWeight);
+    if (!Number.isFinite(numeric)) {
+      return;
+    }
+
     updateLocal(option.id, {
-      promptText: JSON.stringify({
+      promptText: stringifyWeights({
         ...weights,
-        [axisValue]: Number.isFinite(numeric) ? numeric : 0
+        [axisValue]: numeric
       })
     });
   }
@@ -277,13 +292,16 @@ export function AdminConfigOptions() {
               </button>
 
               {promptCategories.has(selectedCategory) ? (
-                <textarea
-                  aria-label="프롬프트 설명"
-                  className="config-prompt-input"
-                  onChange={(event) => updateLocal(option.id, { promptText: event.target.value })}
-                  placeholder="AI 프롬프트에서 이 항목을 어떻게 해석할지 적어 주세요."
-                  value={option.promptText || ""}
-                />
+                <details className="config-prompt-details">
+                  <summary>프롬프트 설명</summary>
+                  <textarea
+                    aria-label="프롬프트 설명"
+                    className="config-prompt-input"
+                    onChange={(event) => updateLocal(option.id, { promptText: event.target.value })}
+                    placeholder="AI 프롬프트에서 이 항목을 어떻게 해석할지 적어 주세요."
+                    value={option.promptText || ""}
+                  />
+                </details>
               ) : null}
 
               {selectedCategory === "rubric_weight" ? (
@@ -295,9 +313,14 @@ export function AdminConfigOptions() {
                         <input
                           min={0}
                           onChange={(event) => updateWeight(option, axis.value, event.target.value)}
+                          placeholder="1"
                           step="0.1"
                           type="number"
-                          value={weights[axis.value] ?? 1}
+                          value={
+                            Object.prototype.hasOwnProperty.call(weights, axis.value)
+                              ? String(weights[axis.value])
+                              : ""
+                          }
                         />
                       </label>
                     ))
