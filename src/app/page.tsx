@@ -27,7 +27,6 @@ export default function Home() {
         <div>
           <p className="eyebrow">Access</p>
           <h2>로그인</h2>
-          <p>권한에 맞는 작업공간으로 바로 이동합니다.</p>
         </div>
 
         {!isConfigured ? (

@@ -14,7 +14,6 @@ export default function LoginPage() {
         <div>
           <p className="eyebrow">Roter Faden Access</p>
           <h1>로그인</h1>
-          <p>권한에 따라 관리자, 튜터, 학생, 보호자 작업공간으로 바로 이동합니다.</p>
         </div>
 
         {!isConfigured ? (

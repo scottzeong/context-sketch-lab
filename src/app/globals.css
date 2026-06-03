@@ -1411,11 +1411,44 @@ button:disabled {
   gap: 10px;
 }
 
+.auth-form-wrap {
+  display: grid;
+  gap: 10px;
+}
+
 .auth-form button {
   align-items: center;
   display: inline-flex;
   gap: 8px;
   justify-content: center;
+}
+
+.auth-support-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.text-button {
+  background: transparent;
+  border: 0;
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  min-height: 34px;
+  padding: 0.35rem 0.45rem;
+}
+
+.text-button:hover {
+  background: var(--paper);
+  color: var(--accent-strong);
+}
+
+.auth-permission-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  text-align: center;
 }
 
 .setup-callout {
