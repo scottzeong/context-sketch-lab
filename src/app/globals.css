@@ -2287,13 +2287,23 @@ p {
 
 .front-page {
   align-items: center;
-  background: url("/brand/back-image.png") center / cover no-repeat;
+  background: #121c27;
   display: grid;
   gap: 28px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   min-height: 100vh;
+  overflow: hidden;
   padding: 28px;
   position: relative;
+}
+
+.front-page::before {
+  background: url("/brand/back-image.png") center / cover no-repeat;
+  content: "";
+  filter: brightness(0.9);
+  inset: 0;
+  position: absolute;
+  z-index: 0;
 }
 
 .front-hero {
