@@ -2253,7 +2253,7 @@ p {
 
 .front-page {
   align-items: center;
-  background: url("/brand/Back-image.png") center / cover no-repeat;
+  background: url("/brand/back-image.png") center / cover no-repeat;
   display: grid;
   gap: 28px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
