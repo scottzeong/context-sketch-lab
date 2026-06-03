@@ -2253,9 +2253,7 @@ p {
 
 .front-page {
   align-items: center;
-  background:
-    linear-gradient(90deg, rgba(18, 28, 39, 0.78) 0%, rgba(18, 28, 39, 0.5) 46%, rgba(243, 237, 213, 0.9) 100%),
-    url("/brand/Back-image.png") center / cover no-repeat;
+  background: url("/brand/Back-image.png") center / cover no-repeat;
   display: grid;
   gap: 28px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
