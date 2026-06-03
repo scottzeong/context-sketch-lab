@@ -2253,22 +2253,29 @@ p {
 
 .front-page {
   align-items: center;
+  background:
+    linear-gradient(90deg, rgba(18, 28, 39, 0.78) 0%, rgba(18, 28, 39, 0.5) 46%, rgba(243, 237, 213, 0.9) 100%),
+    url("/brand/Back-image.png") center / cover no-repeat;
   display: grid;
   gap: 28px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   min-height: 100vh;
   padding: 28px;
+  position: relative;
 }
 
 .front-hero {
   max-width: 820px;
+  position: relative;
+  z-index: 1;
 }
 
 .front-logo {
   align-items: center;
-  background: var(--bg);
-  border: 1px solid rgba(166, 28, 28, 0.14);
+  background: rgba(243, 237, 213, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(18, 28, 39, 0.18);
   display: inline-flex;
   height: 88px;
   margin-bottom: 22px;
@@ -2283,16 +2290,24 @@ p {
 }
 
 .front-hero h1 {
+  color: #fff8e6;
   font-size: clamp(1.7rem, 4.9vw, 3.8rem);
   line-height: 1.5;
   max-width: 880px;
+  text-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
 }
 
 .front-hero p:not(.eyebrow) {
+  color: #f8f1dc;
   font-size: 1.1rem;
   line-height: 1.8;
   margin-top: 20px;
   max-width: 650px;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
+}
+
+.front-hero .eyebrow {
+  color: #ffe1a3;
 }
 
 .front-actions {
@@ -2305,7 +2320,11 @@ p {
 
 .front-login-panel {
   align-self: center;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 70px rgba(18, 28, 39, 0.2);
   max-width: 420px;
+  position: relative;
+  z-index: 1;
 }
 
 .manual-page {
