@@ -18,7 +18,6 @@ const roleHome = {
 export function LoginForm({ isConfigured }: LoginFormProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,49 +76,6 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
     }
   }
 
-  async function requestPasswordReset() {
-    if (!isConfigured) {
-      setMessage("Supabase 환경 변수를 먼저 설정해야 비밀번호 재설정을 요청할 수 있습니다.");
-      return;
-    }
-
-    const emailInput = document.getElementById("email") as HTMLInputElement | null;
-    const email = emailInput?.value.trim();
-
-    if (!email) {
-      setMessage("비밀번호를 찾으려면 먼저 이메일을 입력해 주세요.");
-      emailInput?.focus();
-      return;
-    }
-
-    setIsResettingPassword(true);
-    setMessage(null);
-
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/onboarding`
-      });
-
-      if (error) {
-        setMessage(error.message);
-        return;
-      }
-
-      setMessage("비밀번호 재설정 이메일을 보냈습니다. 이메일을 확인해 주세요.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "비밀번호 재설정 요청에 실패했습니다.");
-    } finally {
-      setIsResettingPassword(false);
-    }
-  }
-
-  function showSignupGuide() {
-    setMessage(
-      "회원가입과 권한 부여는 관리자가 Settings에서 계정을 생성하는 방식입니다. 이름, 이메일, 필요한 역할을 관리자에게 전달해 주세요."
-    );
-  }
-
   return (
     <div className="auth-form-wrap">
       <form className="auth-form" onSubmit={onSubmit}>
@@ -151,22 +107,9 @@ export function LoginForm({ isConfigured }: LoginFormProps) {
         </button>
       </form>
 
-      <div className="auth-support-actions" aria-label="계정 지원">
-        <button
-          className="text-button"
-          disabled={isResettingPassword || !isConfigured}
-          onClick={requestPasswordReset}
-          type="button"
-        >
-          {isResettingPassword ? "이메일 전송 중" : "아이디/비밀번호 찾기"}
-        </button>
-        <button className="text-button" onClick={showSignupGuide} type="button">
-          회원가입
-        </button>
-      </div>
-
       <p className="auth-permission-note">
-        계정과 권한은 관리자가 생성하고 부여합니다.
+        계정과 권한은 관리자가 생성하고 부여합니다. 회원가입을 원하시는 분은
+        sunghye@rootpi.school로 메일로 문의해 주세요.
       </p>
       {message ? <p className="form-message">{message}</p> : null}
     </div>
